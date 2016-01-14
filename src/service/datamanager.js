@@ -40,36 +40,44 @@ var getForumSocialNetwork = function (courseId, filterLevel, callback) {
     } else {
         filterLevel = 0;
     }
-    var tmpURL = mainPath + 'modules/vistoolkit/response/graph/' + courseId + '-' + filterLevel + ".json";
-    $http.get(tmpURL).then(function (response) {
-        callback(response);
-    });
+    var tmpURL = mainPath + 'modules/vistoolkit/data/graph/' + courseId + '-' + filterLevel + ".json";
+    $http.get(tmpURL)
+        .then(function (response) {
+            if (response.ok)
+                callback(response);
+        });
 };
 
-
-
-var getSeekInfo = function (courseId, videoId, paramters ,callback) {
+var getSeekInfo = function (courseId, videoId, paramters, callback) {
     var tmpURL = mainPath + 'getContentBasedData?type=seek&courseId=' + courseId + '&videoId=' + videoId;
-    for(let p in paramters){
-          tmpURL += '&'+ p + '='+paramters[p];
-     }
+    if (typeof paramters === 'function') {
+        callback = paramters;
+    }else if (typeof paramters === 'object') {
+        for (let p in paramters) {
+            tmpURL += '&' + p + '=' + paramters[p];
+        }
+    }
+
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
-var getActionCountInfo = function(courseId,videoId, paramters,callback){
-     var tmpURL = mainPath + 'getContentBasedData?type=action&courseId=' + courseId + '&videoId=' + videoId;
-     for(let p in paramters){
-          tmpURL += '&'+ p + '='+paramters[p];
-     }
-     $http.get(tmpURL).then(function (response) {
+var getActionCountInfo = function (courseId, videoId, paramters, callback) {
+    var tmpURL = mainPath + 'getContentBasedData?type=action&courseId=' + courseId + '&videoId=' + videoId;
+    if (typeof paramters === 'function') {
+        callback = paramters;
+    }else if (typeof paramters === 'object') {
+        for (let p in paramters) {
+            tmpURL += '&' + p + '=' + paramters[p];
+        }
+    }
+
+    $http.get(tmpURL).then(function (response) {
         callback(response);
     });
-    
-}
 
-
+};
 
 var getDailyHotnessByVideo = function (courseId, videoId, callback) {
     var tmpURL = mainPath + 'getVideoPop?courseId=' + courseId + '&videoId=' + videoId;
@@ -120,8 +128,39 @@ var getVideoList = function (courseId, callback) {
     });
 };
 
+var getAnimationTest = function (videoId, startTime, endTime, callback) {
+    var tmpURL = mainPath + 'animationtest?videoId=' + videoId + '&thiscourseId=' + this.thiscourseId + '&startTime=' + startTime + '&endTime=' + endTime;
+    $http.get(tmpURL)
+        .then(function (response) {
+            callback(response);
+        })
+    ;
+};
+
+var getGlyphInfo = function (courseId, callback) {
+    var tmpURL = mainPath + 'getGlyphInfo?courseId=' + courseId;
+    $http.get(tmpURL)
+        .then(function (response) {
+            callback(response);
+        });
+};
+
+var getParallelCoor = function (courseId, callback) {
+    var tempURL = mainPath + 'ParallelCoor?courseId=' + courseId;
+    $http.get(tempURL)
+        .then(function (response) {
+            callback(response)
+        })
+    ;
+};
+
+
+
 // Public API
 export default {
+    'getParallelCoor': getParallelCoor,
+    'getGlyphInfo': getGlyphInfo,
+    'getAnimationTest': getAnimationTest,
     'getSentiment': getSentiment,
     'getWordCloudData': getWordCloudData,
     'getWordCloudDataByGeo': getWordCloudDataByGeo,

@@ -69,32 +69,22 @@
         ready(){
             
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
-        
-            this.mainPath = window.location.pathname;
+            $("#coorelation-info-modal").appendTo("body");
+
             communicator(this).onChangeCourse((courseId)=>{
                 this.courseId = courseId;
-                getServerData(callFunc);
+                dataManager.getParallelCoor(this.courseId,this.processData);
             });
         },
         data(){
             return{
                 courseId:-1,
-                mainPath:"",
-                getURL:"",
                 PCData:[]
             };
         },
         methods:{
-            getServerData(callback){
-                    
-                this.getURL = mainPath + 'ParallelCoor?courseId=' + this.courseId;
-
-                this.$http.get(getURL).then(function(data){
-                    callback(data);
-                })
-            },
-            callFunc(data){
+            processData(response){
+                var data = response.data;
                 var arr = [];
                 var axisKeys = Object.keys(data[0]);
                 var peakNum = data[0].peaks.length;

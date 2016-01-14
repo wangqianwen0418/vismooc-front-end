@@ -3,15 +3,16 @@
     <div id="sentiment-modal" style="width: 1200px; height:600px" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="sentiment-modal-label"
     aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
+        
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                     <h3 id="sentiment-modal-label" class="modal-title">Forum Sentiment analysis</h3>
                 </div>
 
-                <div ng-show="sentimentData" class="modal-body">
-                    <div v-sentiment-vis="sentimentData" hide-me="hideMe" :go-back="showGoBack" option="option" style="height: 600px"></div>
-                    <div v-sentiment-vis="sentimentData2" class="ng-hide" ng-show="sentimentData2" show-data="showData"  :go-back="showGoBack"
+                <div v-show="sentimentData" class="modal-body">
+                    <div v-sentiment-vis="sentimentData" hide-me="hideMe" :go-back="showGoBack" :config="config" style="height: 600px"></div>
+                    <div v-sentiment-vis="sentimentData2" class="ng-hide" v-show="sentimentData2" show-data="showData"  :go-back="showGoBack"
                     style="top:0px; left:0px; height: 100%; width:100%; position:absolute; background-color:white; margin:20px"></div>
                 </div>
 
@@ -27,6 +28,8 @@
                 <p><span id="value">100</span></p>
                 <p><span id="comment">100</span></p>
             </div>
+            
+            
         </div>
     </div>
 
@@ -51,7 +54,7 @@
             },
             ready(){
                 //select the modal then append it to the last of <body>
-                $(this.$el.nextElementSibling).appendTo("body");
+                $("#sentiment-modal").appendTo("body");
                 
                 communicator(this).onChangeCourse((courseId) =>{
                     if (courseId >= 0) {
@@ -83,11 +86,11 @@
             data(){
                 return {
                     courseId:-1,
-                    option:{
+                    config:{
                         width:1200,
                         height:600
                     },
-                    sentimentData:true,
+                    sentimentData:null,
                     sentimentData2:null,
                     showGoBack:false,
                 };

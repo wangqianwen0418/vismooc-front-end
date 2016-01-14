@@ -9,6 +9,8 @@ export default{
         this.sentimentData = null;
         this.init = function(){
             xVar='timestamp';
+            if(!this.sentimentData[0][xVar]) return false;
+            
             w = 1200;
             h = 600;
             padding = 100;
@@ -57,6 +59,8 @@ export default{
             yAxis = d3.svg.axis()
                     .scale(yScale)
                     .orient("left");
+                    
+            return true;
         };
         
         this.extendColorScale = function(positive, neutral){
@@ -516,7 +520,7 @@ export default{
         if(!newVal) return;
         this.sentimentData = newVal;
 
-        this.init();
+        if(!this.init()) return;
         if(this.showGoBack){
             this.setPlotDetail();
         }else{

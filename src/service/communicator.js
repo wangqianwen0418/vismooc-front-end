@@ -50,40 +50,40 @@ export default function (scope) {
 
     var onSentiment = function (handler) {
         scope.$on(SENTIMENT_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     var onGraphUsername = function (handler) {
         scope.$on(GRAPH_USERNAME_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     //click a country in the social network
     var onCode3 = function (handler) {
         scope.$on(CODE3_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     var onFlowmapSlideChange = function (handler) {
         scope.$on(FLOWMAPSLIDE_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     // ShotImg
     var onShotImgChange = function (handler) {
         scope.$on(SHOTIMG_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     // Slide Component include  preview & leftArrow & rightArrow
     var onSlideComponentChange = function (handler) {
         scope.$on(SLIDECOMPONENT_MESSAGE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
@@ -93,7 +93,7 @@ export default function (scope) {
 
     var onChangeCourse = function (handler) {
         scope.$on(CHANGE_COURSE, function (courseId) {
-            handler(courseId);
+            handler.call(scope,courseId);
         });
     };
 
@@ -104,19 +104,19 @@ export default function (scope) {
 
     var onChangeVideo = function (handler) {
         scope.$on(CHANGE_VIDEO, function (video) {
-            handler(video);
+            handler.call(scope,video);
         });
     };
 
     var onFilterCountry = function (handler) {
         scope.$on(FILTER_COUNTRY, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 
     var onFilterDate = function (handler) {
         scope.$on(FILTER_DATE, function (data) {
-            handler(data);
+            handler.call(scope,data);
         });
     };
 

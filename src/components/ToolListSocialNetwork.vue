@@ -55,7 +55,7 @@
         ready(){
             this.complexObject = {};
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
+            $("#social-netwrok-modal").appendTo("body");
             
             communicator(this).onChangeCourse((courseId)=> {
                 if (courseId >= 0) {
@@ -85,8 +85,8 @@
                 this.countrycode=response.data;
                 this.showInfo='Selected country: '+response.data;
 
-                dataManager.getWordCloudDataByGeo(this.courseId, this.countrycode, (data)=>{
-                    this.wordCloudData = data;
+                dataManager.getWordCloudDataByGeo(this.courseId, this.countrycode, (response)=>{
+                    this.wordCloudData = response.data;
                 });
             });
         },
@@ -101,23 +101,22 @@
                 showInfo:"No selection",
                 countrycode:"",
                 wordCloudData:[],
-                data:true,
+                data:null,
                 datacopy:null
             };
 
         },
         methods:{
             clearSelection(){
-                console.log('enter clear')
 
                 this.wordCloudData=[];
                 this.showInfo="No selection";
                 this.countrycode='-';
             },
             changeThreshold(){
-                dataManager.getForumSocialNetwork(this.courseID, this.threshold.value, (data)=>{
-                    this.data = data;
-                    this.datacopy = data;
+                dataManager.getForumSocialNetwork(this.courseID, this.threshold.value, (response)=>{
+                    this.data = response.data;
+                    this.datacopy = response.data;
                 });
             }
         }

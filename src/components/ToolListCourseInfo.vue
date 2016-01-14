@@ -47,7 +47,7 @@
     export default {
         ready(){
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
+            $("#course-info-modal").appendTo("body");
             
             communicator(this).onChangeCourse((courseId)=>{
                 if(courseId >= 0){

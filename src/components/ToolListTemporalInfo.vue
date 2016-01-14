@@ -44,6 +44,11 @@
         </div>
     </div>
 
+    <!--Button-->
+    <div v-show="data" class="statisitc-icon" data-toggle="modal" data-target="#temporal-info-modal">
+        <span class="fa fa-calendar"></span>
+        <br/>Social Network
+    </div>
 
 
 </template>
@@ -65,7 +70,7 @@
         },
         ready(){
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
+            $("#temporal-info-modal").appendTo("body");
             
             communicator(this).onChangeCourse((courseId)=>{
                 this.courseId = courseId;

@@ -33,9 +33,11 @@
         <hr> Peak
         <hr>
     </div>
+    
     <tl-flowmap></tl-flowmap>
     <tl-mds-glyph></tl-mds-glyph>
     <tl-coorelation></tl-coorelation>
+    
 </template>
 
 <script>

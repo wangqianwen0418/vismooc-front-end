@@ -52,7 +52,7 @@
                 }
                 if (length % num !=0) newArray.push(sum/length%num);
                 return newArray;
-                };
+            };
 
             //init colors
             this.colors = d3.scale.ordinal()

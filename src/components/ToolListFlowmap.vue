@@ -1,6 +1,6 @@
 <template>
 
-    <div id="flowmap-modal" class="modal fade" tabindex="-1" style="width:75%; height:{{windowHeight}}px" role="dialog" aria-labelledby="flowmap-modal-label"
+    <div id="flowmap-modal" class="modal fade" tabindex="-1" style="width:75%;" :style="{height:windowHeight+'px'}" role="dialog" aria-labelledby="flowmap-modal-label"
     aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -12,15 +12,7 @@
                     <div class="row clearfix">
                         <div class="col-md-4 column">
                             <div id="videoflow" class="videogular-container" style="margin: 0 5% 0 5%; width: 90%; height: 200px">
-                                <videogular vg-player-ready="onPlayerReady($API)" vg-theme="config.theme.url">
-                                    <vg-media vg-src="config.sources" vg-tracks="config.tracks"></vg-media>
-                                    <vg-controls vg-autohide="config.plugins.controls.autoHide" vg-autohide-time="config.plugins.controls.autoHideTime" style="bottom: 0;">
-                                        <vg-scrub-bar>
-                                            <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
-                                        </vg-scrub-bar>
-                                    </vg-controls>
-                                    <vg-overlay-play></vg-overlay-play>
-                                </videogular>
+                                 <video id="flow-moocVideo" class="video-js vjs-16-9 vjs-default-skin  vjs-big-play-centered" controls></video>
                             </div>
                         </div>
                         <div class="col-md-8 column">
@@ -46,8 +38,8 @@
                             </div>
                             <div class="row clearfix">
                                 <div class="col-md-12 column">
-                                    <div id="flow_stacked_id">
-                                        <nvd3 options="multiChartOptions" data="multiChartdata"></nvd3>
+                                    <div v-show="chartData" id="flow-stacked-area-graph" >
+                                        <svg v-nvd3stackchart="chartData" :course-id="selectedCourseId" :config="chartConfig" ></svg>
                                     </div>
                                 </div>
                             </div>
@@ -62,11 +54,6 @@
         </div>
     </div>
 
-
-
-
-
-
     <!--Button-->
     <div v-show="courseId!=-1" class="statisitc-icon" data-toggle="modal" data-target="#flowmap-modal">
         <span class="fa fa-bolt"></span>
@@ -77,41 +64,63 @@
 
 
 <script>
-        //service
+    //CSS
+    import "video.js/dist/video-js.min.css";
+    //js
+    import videojs from 'video.js';
+    import d3 from 'd3';
+    //service
     import dataManager from '../service/datamanager.js';
     import communicator from '../service/communicator.js';
-    
+    //directives
+    import NvD3StackChart from '../directive/nvd3StackChart.js';
     
     export default {
+        directives:{
+            nvd3stackchart:NvD3StackChart
+        },
         ready(){
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
+            $("#flowmap-modal").appendTo("body");
         
-            this.mainPath = window.location.pathname;
+            Array.prototype.aggregate =  function(num){
+                var length =  this.length;
+                var newArray = [];
+                var sum = 0;
+                for (var i = 0 ; i < length; i++){
+                    sum += this[i];
+                    if ((i+1) % num == 0) {
+                    newArray.push(sum / num);
+                    sum = 0;
+                    }
+                }
+                if (length % num !=0) newArray.push(sum/length%num);
+                return newArray;
+            };
+            
+            this.windowHeight = window.innerHeight;
             //init colors
             this.colors = d3.scale.ordinal()
                 .range(['#1f77b4', '#fdae6b', '#2ca02c', '#d62728', '#9467bd','#8c564b'])
                 .domain(['seeked','pause','play','stalled','error','ratechange'])
             ;
             
-            communicator.onChangeCourse($scope, function(courseID){
-                $scope.courseId = courseID;
+            communicator(this).onChangeCourse((courseId)=>{
+                this.courseId = courseId;
             });
             
             // draw stacked graph over
-            communicator.onChangeVideo($scope, function(videoInfo){
-                $scope.videoId = videoInfo.videoId;
-                $scope.videoLength = videoInfo.videoLength + 1;
-                $scope.$$childHead.videoTime = 0;
-                $scope.config.sources = [
-                {src: $sce.trustAsResourceUrl(videoInfo.videoSource), type: "video/mp4"},
-                {src: $sce.trustAsResourceUrl(videoInfo.videoSource), type: "video/webm"},
-                {src: $sce.trustAsResourceUrl(videoInfo.videoSource), type: "video/ogg"}
-                ];
-                startTime = 0;
-                endTime = 3;
-                getServerData(videoId, startTime, endTime, callFunc);
-                dataManager.getActionCountInfo($scope.courseId, videoInfo.videoId, processData);
+            communicator(this).onChangeVideo((videoInfo)=>{
+                if(videoInfo){
+                    this.videoId = videoInfo.videoId;
+                    this.videoLength = videoInfo.videoLength + 1;
+                    this.videoSource['src'] = videoInfo.videoSource;
+                    this.startTime = 0;
+                    this.endTime = 3;
+                    //this.$$childHead.videoTime = 0;
+                    dataManager.getAnimationTest(this.videoId,this.startTime,this.endTime,this.callFunc);
+                    dataManager.getActionCountInfo(this.courseId, this.videoId, this.processData);
+                }
             });
             
             
@@ -120,15 +129,17 @@
             return{
                 courseId:-1,
                 videoId:-1,
-                windowHeight:$(window).height(),
-                mainPath:"",
-                startTime:0,
-                endTime:3,
+                windowHeight:"",
+
                 brushStart : false,
                 isBrush : false,
                 isFinished : false,
-                getURL:"",
+                startTime:0,
+                endTime:3,
+                ClickAttackData:[],
+                
                 color:null,
+                chartData:null,
                 chartConfig:{
                     type: 'stackedAreaChart',
                     height: 300,
@@ -162,30 +173,20 @@
                         }
                     }
                 },
-                videoConfig:{
+                
+                videoSource: {src:null, type: "video/mp4"},
+                videoConfig: {
+                    controls: true,
                     preload: "none",
-                    sources: [
-                        {src: $sce.trustAsResourceUrl("http://static.videogular.com/assets/videos/videogular.mp4"), type: "video/mp4"},
-                        {src: $sce.trustAsResourceUrl("http://static.videogular.com/assets/videos/videogular.webm"), type: "video/webm"},
-                        {src: $sce.trustAsResourceUrl("http://static.videogular.com/assets/videos/videogular.ogg"), type: "video/ogg"}
-                    ],
-                    theme: {
-                        url: "lib/videogular-themes-default/videogular.css"
-                    },
-                    plugins: {
-                        controls: {
-                            autoHide: true,
-                            autoHideTime: 2000
-                        }
-                    }
-                }
+
+                },
             };
         },
         methods:{
             mouseUpRes(){
-                videoId = $scope.videoId;
-                endTime = this.videoTime;
-                isFinished = true;
+                var endTime = this.videoTime;
+                var startTime;
+                this.isFinished = true;
                 if(!isBrush){
                     startTime = endTime;
                     endTime = (+startTime) + 3;
@@ -196,63 +197,62 @@
                     startTime = temp;
                 }
                 if((+endTime) < (+startTime) + 3) endTime = (+startTime) + 3;
-                getServerData(videoId, startTime, endTime, callFunc);
-                isBrush =false;
-                brushStart = false;
-                console.log(startTime);
-                $scope.videogularAPI.seekTime(startTime);
+                
+                dataManager.getAnimationTest(this.videoId,startTime,endTime,this.callFunc);
+                this.isBrush =false;
+                this.brushStart = false;
+                
+                //TODO video API
+                //this.videogularAPI.seekTime(startTime);
             },
             moveRes(){
                 if(brushStart){
-                    isBrush = true;
-                    endTime = this.videoTime;
-                    $scope.ClickAttackData = [];
-                    $scope.ClickAttackData.push($scope.courseId);
-                    $scope.ClickAttackData.push($scope.videoLength);
-                    $scope.ClickAttackData.push(isBrush);
-                    $scope.ClickAttackData.push(isFinished);
-                    $scope.ClickAttackData.push(startTime);
-                    $scope.ClickAttackData.push(endTime);
+                    this.isBrush = true;
+                    this.endTime = this.videoTime;
+                    this.ClickAttackData = [];
+                    this.ClickAttackData.push(this.courseId);
+                    this.ClickAttackData.push(this.videoLength);
+                    this.ClickAttackData.push(this.isBrush);
+                    this.ClickAttackData.push(this.isFinished);
+                    this.ClickAttackData.push(this.startTime);
+                    this.ClickAttackData.push(this.endTime);
                 }
             },
             mouseDownRes(){
-                startTime = this.videoTime;
-                isFinished = false;
-                brushStart =true;
+                this.startTime = this.videoTime;
+                this.isFinished = false;
+                this.brushStart =true;
             },
-            callFunc(data){
-                $scope.ClickAttackData = [];
-                $scope.ClickAttackData.push($scope.courseId);
-                $scope.ClickAttackData.push($scope.videoLength);
-                $scope.ClickAttackData.push(isBrush);
-                $scope.ClickAttackData.push(isFinished);
-                $scope.ClickAttackData.push(startTime);
-                $scope.ClickAttackData.push(endTime);
-                $scope.ClickAttackData.push(data);
+            callFunc(response){
+                this.ClickAttackData = [];
+                this.ClickAttackData.push(this.courseId);
+                this.ClickAttackData.push(this.videoLength);
+                this.ClickAttackData.push(this.isBrush);
+                this.ClickAttackData.push(this.isFinished);
+                this.ClickAttackData.push(this.startTime);
+                this.ClickAttackData.push(this.endTime);
+                this.ClickAttackData.push(response.data);
             },
-            processData(data){
+            processData(response){
+                var data = response.data;
+                var colors = this.colors;
                 if (!data.clicks) return;
-                $scope.multiChartdata = data.clicks.map(function (dat) {
+                this.chartData = data.clicks.map(function (dat) {
                     var length = dat.data.length;
-                    var result = dat.data.slice(3, length - 3).aggregate(3).map(function (dd, i) {
+                    var result = dat.data.slice(3, length - 3)
+                        .aggregate(3)
+                        .map(function (dd, i) {
+                            return {
+                                x: i * 3,
+                                y: Math.floor(dd)
+                            };
+                        });
                     return {
-                        x: i * 3,
-                        y: Math.floor(dd)
-                    };
-                    });
-                    return {
-                    key: dat.type,
-                    values: result,
-                    color: colors(dat.type)
+                        key: dat.type,
+                        values: result,
+                        color: colors(dat.type)
                     };
                 });
-            },
-            getServerData(videoId, startTime, endTime, callback){
-                getURL = mainPath + 'animationtest?videoId=' + videoId + '&courseId=' + $scope.courseId + '&startTime=' + startTime + '&endTime=' + endTime;
-                $http.get(getURL).success(function(data){
-                    console.log(getURL);
-                        callback(data);
-                })
             }
         }
         

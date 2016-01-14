@@ -1,6 +1,5 @@
 <template>
 
-
     <div id="mds-glyph-modal" class="modal fade" tabindex="-1" style="min-width:40%" role="dialog" aria-labelledby="mds-glyph-modal-label"
     aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -40,7 +39,11 @@
 </template>
 
 <script>
+    //js
+    import d3 from 'd3';
+
     //service
+    import MDS from '../service/mds.js';
     import dataManager from '../service/datamanager.js';
     import communicator from '../service/communicator.js';
     
@@ -48,43 +51,38 @@
         ready(){
             
             //select the modal then append it to the last of <body>
-            $(this.$el.nextElementSibling).appendTo("body");
-            
-
-            
-            this.mainPath = window.location.pathname;
-            
-            
+            $("#mds-glyph-modal").appendTo("body");
+                    
             var w = d3.scale.linear().range([30, 60]);
             var h = d3.scale.linear().range([30, 45]);
-                
+            var self = this;
             communicator(this).onChangeCourse((courseId)=>{
                 this.courseId = courseId;
 
                 // get videoList
                 var videoList;
                 var videoListHash = {};
-                dataManager.getVideoList(courseId, function(data){
-                    videoList = data;
-                    angular.forEach(videoList, function(d){
-                        angular.forEach(d.videos, function(dd){
+                dataManager.getVideoList(courseId,(response)=>{
+                    videoList = response.data;
+                    videoList.forEach(function(d){
+                        d.videos.forEach(function(dd){
                             videoListHash[dd.videoId] = dd;
                         });
                     });
-                    this.videoListHash = videoListHash;
+                    self.videoListHash = videoListHash;
                 });
 
                 var weekNum = (courseId == 4) ? 10 : 4;
-                this.$http.get(mainPath + 'getGlyphInfo?courseId=' + courseId)
-                    .success(function(data, status, headers, config){
+                dataManager.getGlyphInfo(courseId,(response)=>{
 
                         var colors = [],
                             usedcolors = 0;
                         // get nodes
-                        var nodes = [];					
+                        var nodes = [];	
+                        var data = response.data;				
                         data.forEach(function(d){
                             var tmpNode = {};
-                            var tmpcolor = getMyColor(d.videoId, colors);
+                            var tmpcolor = self.getMyColor(d.videoId, colors);
 
                             if (tmpcolor != null){
                                 tmpNode['group'] = tmpcolor;
@@ -92,7 +90,6 @@
                                 usedcolors++;
                                 colors.push({
                                     'videoId': d.videoId,
-                                    //'videoId': d._id,
                                     'color': usedcolors
                                 });
                                 tmpNode['group'] = usedcolors;
@@ -103,12 +100,12 @@
                         // get links,    there are links for those whose similarity >=0.5
                         var links = [];
                         var linkCount = [];
-                        for(var i = 0; i < data.length; i++ ){
+                        for(let i = 0,len = data.length; i < len; ++i ){
                             linkCount.push(0);
                         }
 
                         var simMatrix = [];
-                        angular.forEach(d3.range(data.length), function(){
+                        d3.range(data.length).forEach(function(){
                             simMatrix.push(d3.range(data.length));
                         });
                         var minSim = 1, maxSim = 0;
@@ -116,7 +113,7 @@
                             var simTh = 0.2;
                             simMatrix[i][i] = 1;
                             for (var j = i + 1, obj2; obj2 = data[j]; j++) {
-                                var sim = getSimilarity(obj1.peopleInfo, obj2.peopleInfo);
+                                var sim = self.getSimilarity(obj1.peopleInfo, obj2.peopleInfo);
                                 simMatrix[i][j] = simMatrix[j][i] = sim;
                                 if (minSim > sim)
                                     minSim = sim;
@@ -138,7 +135,7 @@
                                 simMatrix[row][column] = fs(simMatrix[row][column]);
                             });
                         });
-                        var coordinate = LG.utils.Mds.mds(simMatrix);
+                        var coordinate = MDS.mds(simMatrix);
 
 
                         w.domain(d3.extent(data, function(d){ return d.peakWidth }));
@@ -215,8 +212,8 @@
                             'coordinate': coordinate,
                             'peakBasicInfo': data
                         };
-                        this.peaks = peaks;
-                        this.graphData = finalData;
+                        self.peaks = peaks;
+                        self.graphData = finalData;
                     });
             });
             
@@ -225,13 +222,12 @@
         },
         data(){
             return{
-              courseId:-1,
-              mainPath:"",
+              courseId:-1
 
             };
         },
         methods:{
-             intersect(a, b) {
+            intersect(a, b) {
                 var t;
                 if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
                 return a.filter(function (e) {
@@ -255,7 +251,7 @@
             },
 
             getSimilarity(arr1, arr2){
-                var length = intersect(arr1, arr2).length;
+                var length = this.intersect(arr1, arr2).length;
                 return length / (arr1.length + arr2.length - length);
             },
 
