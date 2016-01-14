@@ -1,6 +1,6 @@
 <template>
 
-    <div id="temporal-info-modal" class="modal fade" style="min-width: 40%" tabindex="-1" role="dialog" aria-labelledby="temporal-info-modal-label"
+    <div id="temporal-info-modal" class="modal fade"  tabindex="-1" role="dialog" aria-labelledby="temporal-info-modal-label"
     aria-hidden="true">
         <div class="modal-dialog " role="document">
             <div class="modal-content">

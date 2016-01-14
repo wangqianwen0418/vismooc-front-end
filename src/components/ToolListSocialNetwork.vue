@@ -1,5 +1,5 @@
 <template>
-        <div id="social-netwrok-modal" class="modal fade" style="min-width: 40%" tabindex="-1" role="dialog" 
+        <div id="social-netwrok-modal" class="modal fade" tabindex="-1" role="dialog" 
     aria-labelledby="social-netwrok-modal-label" aria-hidden="true">
     
         <div class="modal-dialog modal-lg" role="document">

@@ -1,6 +1,6 @@
 <template>
 
-    <div id="mds-glyph-modal" class="modal fade" tabindex="-1" style="min-width:40%" role="dialog" aria-labelledby="mds-glyph-modal-label"
+    <div id="mds-glyph-modal" class="modal fade" tabindex="-1"  role="dialog" aria-labelledby="mds-glyph-modal-label"
     aria-hidden="true">
         <div class="modal-dialog" role="document">
 

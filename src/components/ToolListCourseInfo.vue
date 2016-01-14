@@ -1,6 +1,6 @@
 <template>
     <!--Modal-->
-    <div id="course-info-modal" class="modal fade"  tabindex="-1" style = "min-width:40%"  role="dialog" aria-labelledby="course-info-modal-label" aria-hidden="true">
+    <div id="course-info-modal" class="modal fade"  tabindex="-1"   role="dialog" aria-labelledby="course-info-modal-label" aria-hidden="true">
         <div class="modal-dialog"  role="document">
             <div class="modal-content">
                 <div class="modal-header">

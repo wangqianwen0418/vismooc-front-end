@@ -1,6 +1,6 @@
 <template>
 
-    <div id="flowmap-modal" class="modal fade" tabindex="-1" style="width:75%;" :style="{height:windowHeight+'px'}" role="dialog" aria-labelledby="flowmap-modal-label"
+    <div id="flowmap-modal" class="modal fade" tabindex="-1" :style="{height:windowHeight+'px'}" role="dialog" aria-labelledby="flowmap-modal-label"
     aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

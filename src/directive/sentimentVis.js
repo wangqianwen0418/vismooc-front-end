@@ -40,7 +40,7 @@ export default{
                 }) - 0.1])
                 .range([padding, h - padding]);
 
-            mouseScale= d3.scale.linear()
+            mouseScale = d3.scale.linear()
                     .domain(d3.extent(this.sentimentData, function(d){
                       return d[xVar];
                     }))
@@ -324,7 +324,7 @@ export default{
                     var mouse = d3.mouse(this);
 
                     var xPosition = mouseScale(d[xVar]);
-                    var yPosition = mouse[1];
+                    var yPosition = mouse[1] - 30;
                     //Update the tooltip position and value
                     d3.select("#tooltip")
                         .style("left", xPosition + "px")

@@ -1,7 +1,7 @@
 <template>
 
     <!--Modal-->
-    <div id="demographic-info-modal" class="modal fade" style="min-width: 40%" tabindex="-1" role="dialog" 
+    <div id="demographic-info-modal" class="modal fade"  tabindex="-1" role="dialog" 
     aria-labelledby="demographic-info-modal-label" aria-hidden="true">
         <div class="modal-dialog modal-less-lg" role="document">
             <div class="modal-content">
