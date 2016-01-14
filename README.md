@@ -3,5 +3,6 @@
 Rewrite the vismooc2.0 front end part by using Vuejs framework.
 
 ## Road map
-[] Fix bugs
-[] Beautify
+* Finish the rest tool list components and related directives
+* Fix bugs
+* Beautify
