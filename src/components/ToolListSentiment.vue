@@ -11,30 +11,22 @@
                 </div>
 
                 <div v-show="sentimentData" class="modal-body">
-                    <div v-sentiment-vis="sentimentData" hide-me="hideMe" :go-back="showGoBack" :config="config" style="height: 600px"></div>
-                    <div v-sentiment-vis="sentimentData2" class="ng-hide" v-show="sentimentData2" show-data="showData"  :go-back="showGoBack"
+                    <div v-sentiment-vis="sentimentData" :go-back="showGoBack" :config="mdsChartConfig" ></div>
+                    <div v-sentiment-vis2="sentimentData2" v-show="sentimentData2" :go-back="showGoBack" :config="mdsChartConfig"
                     style="top:0px; left:0px; height: 100%; width:100%; position:absolute; background-color:white; margin:20px"></div>
                     
                     <div id="tooltip" class="hidden sentiment-modal-tooltip">
-                        <p><strong></strong></p>
                         <p><span id="username">100</span></p>
                         <p><span id="value">100</span></p>
                         <p><span id="comment">100</span></p>
                     </div>
-                    
-                    
+    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Close</button>
                 </div>
                 
-                
-                
             </div>
-
-
-            
-            
         </div>
     </div>
 
@@ -55,12 +47,13 @@
     
     export default {
             directives:{
-                sentimentVis:SentimentVis
+                sentimentVis:SentimentVis,
+                sentimentVis2:SentimentVis
             },
             ready(){
                 //select the modal then append it to the last of <body>
                 $("#sentiment-modal").appendTo("body");
-                
+
                 communicator(this).onChangeCourse((courseId) =>{
                     if (courseId >= 0) {
                         this.courseId = courseId;
@@ -74,15 +67,17 @@
                 });
                 
                 
-                communicator(this).onSentiment((response)=>{
-                    var data = response.data;
-                    if(data === 'delete'){
+                communicator(this).onSentiment((flag)=>{
+                    console.log(flag);
+                    if(flag === 'delete'){
                         this.showGoBack = false;
                         this.sentimentData2 = undefined;
                     }else{
                         this.showGoBack = true;
-                        dataManager.getSentimentDetails(this.courseID, data.days,(response)=>{
-                            this.sentimentData2 = data;
+                        
+                        dataManager.getSentimentDetails(this.courseId, flag.days,(response)=>{
+                            this.sentimentData2 = response.data;
+                            console.log(this.sentimentData2);
                         });
                     }
                 });
@@ -91,8 +86,8 @@
             data(){
                 return {
                     courseId:-1,
-                    config:{
-                        width:1200,
+                    mdsChartConfig:{
+                        width:868,
                         height:600
                     },
                     sentimentData:null,
