@@ -46,7 +46,6 @@
     export default {
             directives:{
                 sentimentVis:SentimentVis
-                //sentimentVis2:SentimentVis
             },
             ready(){
                 //select the modal then append it to the last of <body>
@@ -88,14 +87,11 @@
                         height:600
                     },
                     sentimentData:null,
-                    sentimentData2:null,
-                    showGoBack:false,
+                    sentimentDataCache:null
                 };
             },
             methods:{
-                clickFunc(){
-                    this.sentimentData2 = undefined;
-                }
+
             }
     }
 
