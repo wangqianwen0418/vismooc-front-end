@@ -12,9 +12,7 @@
 
                 <div v-show="sentimentData" class="modal-body">
                     <div v-sentiment-vis="sentimentData" :go-back="showGoBack" :config="mdsChartConfig" ></div>
-                    <div v-sentiment-vis2="sentimentData2" v-show="sentimentData2" :go-back="showGoBack" :config="mdsChartConfig"
-                    style="top:0px; left:0px; height: 100%; width:100%; position:absolute; background-color:white; margin:20px"></div>
-                    
+
                     <div id="tooltip" class="hidden sentiment-modal-tooltip">
                         <p><span id="username">100</span></p>
                         <p><span id="value">100</span></p>
@@ -47,8 +45,8 @@
     
     export default {
             directives:{
-                sentimentVis:SentimentVis,
-                sentimentVis2:SentimentVis
+                sentimentVis:SentimentVis
+                //sentimentVis2:SentimentVis
             },
             ready(){
                 //select the modal then append it to the last of <body>
@@ -60,7 +58,8 @@
 
                         dataManager.getSentiment(courseId, (response)=>{
                             this.sentimentData = response.data;
-                            this.sentimentData2 = undefined;
+                            this.sentimentDataCache = this.sentimentData;
+                            //this.sentimentData2 = undefined;
                             this.showGoBack = false;
                         });
                     }
@@ -68,16 +67,13 @@
                 
                 
                 communicator(this).onSentiment((flag)=>{
-                    console.log(flag);
                     if(flag === 'delete'){
-                        this.showGoBack = false;
-                        this.sentimentData2 = undefined;
+                        this.mdsChartConfig.isDetail = false;
+                        this.sentimentData = this.sentimentDataCache;
                     }else{
-                        this.showGoBack = true;
-                        
+                        this.mdsChartConfig.isDetail = true;
                         dataManager.getSentimentDetails(this.courseId, flag.days,(response)=>{
-                            this.sentimentData2 = response.data;
-                            console.log(this.sentimentData2);
+                            this.sentimentData = response.data;
                         });
                     }
                 });
@@ -87,6 +83,7 @@
                 return {
                     courseId:-1,
                     mdsChartConfig:{
+                        isDetail:false,
                         width:868,
                         height:600
                     },
@@ -126,5 +123,13 @@
 .axis text {
     font-family: sans-serif;
     font-size: 11px;
+}
+
+.goBackLink {
+    cursor: pointer;
+}
+.goBackLink:hover{
+    
+    color:red;
 }
 </style>
