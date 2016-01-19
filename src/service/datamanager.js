@@ -128,8 +128,8 @@ var getVideoList = function (courseId, callback) {
     });
 };
 
-var getAnimationTest = function (videoId, startTime, endTime, callback) {
-    var tmpURL = mainPath + 'animationtest?videoId=' + videoId + '&thiscourseId=' + this.thiscourseId + '&startTime=' + startTime + '&endTime=' + endTime;
+var getAnimationTest = function (courseId, videoId, startTime, endTime, callback) {
+    var tmpURL = mainPath + 'animationtest?videoId=' + videoId + '&courseId=' + courseId + '&startTime=' + startTime + '&endTime=' + endTime;
     $http.get(tmpURL)
         .then(function (response) {
             callback(response);

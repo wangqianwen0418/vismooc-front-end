@@ -1,45 +1,47 @@
 <template>
 
-    <div id="flowmap-modal" class="modal fade" tabindex="-1" :style="{height:windowHeight+'px'}" role="dialog" aria-labelledby="flowmap-modal-label"
-    aria-hidden="true">
-        <div class="modal-dialog" role="document">
+    <div id="flowmap-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="flowmap-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-more-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
-                    <h3 id="flowmap-modal-label" class="modal-title">Course Information</h3></div>
-                <div class="modal-body">
+                    <h3 id="flowmap-modal-label" class="modal-title">Course Information</h3>
+                </div>
 
-                    <div class="row clearfix">
+                <div class="modal-body">
+                    <div class="row">
                         <div class="col-md-4 column">
-                            <div id="videoflow" class="videogular-container" style="margin: 0 5% 0 5%; width: 90%; height: 200px">
-                                 <video id="flow-moocVideo" class="video-js vjs-16-9 vjs-default-skin  vjs-big-play-centered" controls></video>
+                            <div id="flow-moocVideo-container">
+                                <video id="flow-moocVideo" class="video-js vjs-16-9 vjs-default-skin  vjs-big-play-centered" controls></video>
                             </div>
                         </div>
+
                         <div class="col-md-8 column">
-                            <div class="row clearfix">
+                            <div class="row">
                                 <div class="col-md-12 column">
-                                    <div class="peak_flowmap">
-                                        <div class="peak_flowmap_container" id="flowmap_container">
-                                            <div style="width: 100%; height:100%" id="flowmap_whole">
-                                                <div class="peak_flowmap_map">
-                                                    <div map data="ClickAttackData"></div>
-                                                </div>
-                                                <div class="peak_flowmap_flow">
-                                                    <div staticmap data="ClickAttackData"></div>
-                                                </div>
-                                                <div class="flowmapin">
-                                                    <input id="flowmapInput" type="range" min="0" max="{{videoLength}}" step="3" value="0" class="ng-valid ng-dirty" ng-model="videoTime"
-                                                    ng-mousemove="moveRes()" ng-mousedown="mouseDownRes()" ng-mouseup="mouseUpRes()">
-                                                </div>
-                                            </div>
+
+                                    <div class="peak-flowmap">
+                                        <div class="peak-flowmap-container">
+
+                                            <div id="peak-flowmap-map"> </div>
+
+                                            <div id="peak-flowmap-flow"></div>
+
+                                            <!--<div class="flowmapin">
+                                                <input id="flowmapInput" type="range" min="0" :max="videoLength" step="3" value="0" class="ng-valid ng-dirty" v-model="videoTime"
+                                                mousemove="moveRes()" mousedown="mouseDownRes()" mouseup="mouseUpRes()">
+                                            </div>-->
+
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
-                            <div class="row clearfix">
+
+                            <div class="row">
                                 <div class="col-md-12 column">
-                                    <div v-show="chartData" id="flow-stacked-area-graph" >
-                                        <svg v-nvd3stackchart="chartData" :course-id="selectedCourseId" :config="chartConfig" ></svg>
+                                    <div id="flow-stacked-area-graph">
+                                        <svg v-nvd3stackchart="chartData" :course-id="selectedCourseId" :config="chartConfig"></svg>
                                     </div>
                                 </div>
                             </div>
@@ -55,7 +57,7 @@
     </div>
 
     <!--Button-->
-    <div v-show="courseId!=-1" class="statisitc-icon" data-toggle="modal" data-target="#flowmap-modal">
+    <div v-show="courseId!=-1" class="statisitc-icon" @click="RenderStackAreaChart()" data-toggle="modal" data-target="#flowmap-modal">
         <span class="fa fa-bolt"></span>
         <br/>Flowmap
     </div>
@@ -69,6 +71,7 @@
     //js
     import videojs from 'video.js';
     import d3 from 'd3';
+    import Datamap from 'datamaps';
     //service
     import dataManager from '../service/datamanager.js';
     import communicator from '../service/communicator.js';
@@ -80,6 +83,7 @@
             nvd3stackchart:NvD3StackChart
         },
         ready(){
+            this.complexObject = {};
             //select the modal then append it to the last of <body>
             $("#flowmap-modal").appendTo("body");
         
@@ -99,6 +103,8 @@
             };
             
             this.windowHeight = window.innerHeight;
+
+            
             //init colors
             this.colors = d3.scale.ordinal()
                 .range(['#1f77b4', '#fdae6b', '#2ca02c', '#d62728', '#9467bd','#8c564b'])
@@ -115,14 +121,18 @@
                     this.videoId = videoInfo.videoId;
                     this.videoLength = videoInfo.videoLength + 1;
                     this.videoSource['src'] = videoInfo.videoSource;
+                    
+                    if(!this.player){
+                        this.player = videojs('flow-moocVideo',this.videoConfig);
+                    }
+                    this.player.src(this.videoSource);
+                    
                     this.startTime = 0;
-                    this.endTime = 3;
-                    //this.$$childHead.videoTime = 0;
-                    dataManager.getAnimationTest(this.videoId,this.startTime,this.endTime,this.callFunc);
+                    this.endTime = this.videoLength;
+                    dataManager.getAnimationTest(this.courseId, this.videoId,this.startTime,this.endTime,this.callFunc);
                     dataManager.getActionCountInfo(this.courseId, this.videoId, this.processData);
                 }
             });
-            
             
         },
         data(){
@@ -131,19 +141,17 @@
                 videoId:-1,
                 windowHeight:"",
 
-                brushStart : false,
-                isBrush : false,
-                isFinished : false,
                 startTime:0,
                 endTime:3,
-                ClickAttackData:[],
+                clickAttackData:[],
                 
-                color:null,
+                colors:null,
                 chartData:null,
+                chartDataCache:null,
                 chartConfig:{
                     type: 'stackedAreaChart',
                     height: 300,
-                    width: 794.3,
+                    width:635,
                     margin : {
                         top: 20,
                         right: 0,
@@ -154,7 +162,7 @@
                     y: function(d){return d.y;},
                     useVoronoi: false,
                     clipEdge: true,
-                    transitionDuration: 500,
+                    duration: 500,
                     useInteractiveGuideline: true,
                     xAxis: {
                         showMaxMin: false,
@@ -162,7 +170,7 @@
                             var sec=d%60;
                             var min=Math.floor(d/60);
                             if(sec===0){
-                            sec='00';
+                                sec='00';
                             }
                             return d3.time.format(min+'\''+sec+'\"');
                         }                               
@@ -174,15 +182,250 @@
                     }
                 },
                 
+                player:null,
                 videoSource: {src:null, type: "video/mp4"},
                 videoConfig: {
                     controls: true,
                     preload: "none",
-
                 },
+                videoLength:0
             };
         },
+        complexObject:{
+            map:null,
+            svg:null,
+            flow:null
+        },
         methods:{
+            createMap(){
+                var datas = this.clickAttackData;
+     
+                var self = this;
+                var height = 300,
+                    width = 635;
+                
+                //TODO
+                var geoData = {};
+                
+                var videoLength = datas[1];
+                var clickArray = datas[2];
+                var max = 0;
+                for(var i = 0,len = clickArray.length; i < len; ++i){
+                    var countryName = clickArray[i].code3;
+                    if(!geoData[countryName]){
+                        geoData[countryName] = {id:countryName,count:0,fillColor:""};
+                    }
+                    geoData[countryName].count += clickArray[i].count;
+                    if(geoData[countryName].count > max) max = geoData[countryName].count;
+                }
+
+                //set the color range
+                var color = d3.scale.linear().range(['#ffffe5', '#41ab5d']).domain([0, Math.log(max+1)]);
+                for(var p in geoData){
+                    geoData[p].fillColor = color(Math.log(geoData[p].count));
+                }
+                
+                if(!this.complexObject.map){
+                    this.complexObject.map = new Datamap({
+                        element: document.getElementById('peak-flowmap-map'),
+                        height: height, width: width,
+                        fills: {
+                            defaultFill: '#ffffe5'
+                        },
+                        geographyConfig:{ 
+                            borderColor: '#dddddd'
+                        },
+                        data:geoData
+                    });
+                    this.complexObject.svg = this.complexObject.map.svg;
+                }
+
+                if(!this.complexObject.flow){
+                    height = 400;
+                    this.complexObject.svg.attr('height',height);
+                    this.complexObject.flow = this.complexObject.svg.append('g').attr('class','flow-map-flow');
+                    
+                    var timeaxisScale = d3.time.scale()
+                        .domain([new Date(0), new Date(videoLength * 1000)])
+                        .rangeRound([0, width]);
+                        
+                    var brush = d3.svg
+                            .brush()
+                            .x(timeaxisScale)
+                            .on('brushend',function(){
+                                var extent = brush.extent();
+                                var startTime = Math.round(extent[0].getTime()/1000);
+                                var endTime = Math.round(extent[1].getTime()/1000);
+                                console.log(startTime,endTime);
+                                dataManager.getAnimationTest(self.courseId,self.videoId,startTime,endTime,self.callFunc);
+                            });
+                    ; 
+                    this.complexObject.flow.append("g")
+                        .attr("class", "x brush")
+                        .call(brush)
+                        .selectAll("rect")
+                        .attr("y", height - 90)
+                        .attr("height", 35);
+                            
+                    var xAxis = d3.svg.axis()
+                        .scale(timeaxisScale)
+                        .orient('top')
+                        .tickSize(0);
+
+                    var axisSelector =  this.complexObject.flow.append('g')
+                        .attr('class', 'axis')
+                        .attr('transform', 'translate(0, ' + (height - 60) + ')')
+                        .call(xAxis);
+                  
+                    axisSelector.select('path')
+                        .style('fill', 'none')
+                        .style('stroke', '#a9a9a9')
+                        .style('stroke-width', '2')
+                        .style("stroke-dasharray", ("2, 4"))
+                        .style('shape-rendering', 'crispEdges');
+                }
+              
+                //WTH?
+                // d3.select("#flowmapInput").on("change", function () {
+                //     d3.select("#peakSelected").text(this.value);
+                // });
+            },
+            upDateMapAndFlow(){
+                //TODO
+                var geoData = {};
+                var clickArray = this.clickAttackData[2];
+                var max = 0;
+                for(var i = 0,len = clickArray.length; i < len; ++i){
+                    var countryName = clickArray[i].code3;
+                    if(!geoData[countryName]){
+                        geoData[countryName] = {id:countryName,count:0,fillColor:""};
+                    }
+                    geoData[countryName].count += clickArray[i].count;
+                    if(geoData[countryName].count > max) max = geoData[countryName].count;
+                }
+
+                //set the color range
+                var color = d3.scale.linear().range(['#ffffe5', '#41ab5d']).domain([0, Math.log(max+1)]);
+                for(var p in geoData){
+                    geoData[p].fillColor = color(Math.log(geoData[p].count));
+                }
+                
+                this.complexObject.map.updateChoropleth(geoData);
+  
+                var videoLength = this.clickAttackData[1];
+                var flowData = this.clickAttackData[2];
+                var height = 300;
+                var width = 635;
+                
+                var svg = this.complexObject.flow;
+                
+                //clear previous svg
+                // svg.selectAll("path").remove();
+                // svg.selectAll("circle").remove();
+                // svg.selectAll("rect").remove();              
+                
+                var timelinePos = 400  - 60,
+                    pathColor = "#FE7E13",
+                    pathOpacity = 0.4,
+                    pathWidth = 0.5,
+                    circleRadius = 1000,
+                    outerCircleOpacity = 0.4,
+                    innerCircleOpacity = 1,
+                    outerCircleColor = "#d73027",
+                    innerCircleColor = "#FE7E13";
+
+                var temporalCount = [];
+                for (var i = 0; i < videoLength; i++) {
+                    temporalCount.push({'click': 0, 'people': 0});
+                }
+
+                var geoCoorCalculate = function(longitude, latitude) {
+                    var coor = {};
+                    coor.x = longitude * width;
+                    coor.y = latitude * 400;
+                    return coor;
+                }
+
+                var countryTop = ['USA', 'CHN', 'GBR', 'CAN', 'DEU', 'BRA', 'ESP', 'AUS', 'FRA', 'IND', 'RUS'];
+                var countryMax = {};
+                for (var j = 0; j < countryTop.length; j++) {
+                    countryMax[countryTop[j]] = {
+                        clickNum: 0,
+                        userNum: 0,
+                        longitude: 0,
+                        latitude: 0
+                    };
+                }
+
+                for (var i = 0,len = flowData.length; i < len ; i++) {
+                    if (countryTop.indexOf(flowData[i].code3) < 0) continue;
+                    var radius = Math.log(flowData[i].count * pathWidth);
+                    countryMax[flowData[i].code3].clickNum += flowData[i].count;
+                    countryMax[flowData[i].code3].userNum++;
+                    countryMax[flowData[i].code3].longitude = flowData[i].longitude;
+                    countryMax[flowData[i].code3].latitude = flowData[i].latitude;
+                    temporalCount[flowData[i].startTime].people++;
+                    temporalCount[flowData[i].startTime].click += flowData[i].count;
+                    if (radius < 1) radius = 1;
+
+                    var bCurveCo = 0.1;
+                    var p1 = geoCoorCalculate(flowData[i].longitude, flowData[i].latitude);
+                    var p2 = {x: (flowData[i].startTime) / videoLength * width, y: timelinePos - 4};
+                    var p3 = {x: 0.5 * ( p1.x + p2.x), y: height };
+                    var cp1 = {x: p1.x, y: bCurveCo * p1.y + (1 - bCurveCo) * p3.y};
+                    var cp2 = {x: (1 - bCurveCo) * p1.x + bCurveCo * p3.x, y: p3.y};
+                    var cp3 = {x: bCurveCo * p3.x + (1 - bCurveCo) * p2.x, y: p3.y};
+                    var cp4 = {x: p2.x, y: (1 - bCurveCo) * p3.y + bCurveCo * p2.y};
+
+                    var pathStr = 'M' + p1.x + ',' + p1.y + ' C'
+                                    + cp1.x + ',' + cp1.y + ' '
+                                    + cp2.x + ',' + cp2.y + ' '
+                                    + p3.x + ',' + p3.y + ' C'
+                                    + cp3.x + ',' + cp3.y + ' '
+                                    + cp4.x + ',' + cp4.y + ' '
+                                    + p2.x + ',' + p2.y;
+
+                    svg.append("path")
+                        .attr("id", "flowPath")
+                        .attr("d", pathStr)
+                        .style("stroke", pathColor)
+                        .style("stroke-width", radius)
+                        .style("fill", "none")
+                        .style("opacity", pathOpacity);
+                }
+
+                for (var i = 0; i < countryTop.length; i++) {
+                    var geoCoorTemp = {};
+                    geoCoorTemp = geoCoorCalculate(countryMax[countryTop[i]].longitude, countryMax[countryTop[i]].latitude);
+                    radius = Math.log(countryMax[countryTop[i]].clickNum * circleRadius);
+                    if (radius < 0.1) radius = 0.1;
+                    svg.append("circle")
+                        .attr("r", radius)
+                        .style("fill", outerCircleColor)
+                        .attr("cx", geoCoorTemp.x)
+                        .attr("cy", geoCoorTemp.y)
+                        .attr("opacity", outerCircleOpacity);
+
+                    radius = Math.log(countryMax[countryTop[i]].userNum * circleRadius);
+                    if (radius < 0.1) radius = 0.1;
+                    svg.append("circle")
+                        .attr("r", radius)
+                        .style("fill", innerCircleColor)
+                        .attr("cx", geoCoorTemp.x)
+                        .attr("cy", geoCoorTemp.y)
+                        .attr("opacity", innerCircleOpacity);
+                }
+                
+            },
+            brushStart(){
+                
+            },
+            brush(){
+                
+            },
+            brushEnd(){
+                
+            },
             mouseUpRes(){
                 var endTime = this.videoTime;
                 var startTime;
@@ -198,7 +441,7 @@
                 }
                 if((+endTime) < (+startTime) + 3) endTime = (+startTime) + 3;
                 
-                dataManager.getAnimationTest(this.videoId,startTime,endTime,this.callFunc);
+ 
                 this.isBrush =false;
                 this.brushStart = false;
                 
@@ -209,13 +452,9 @@
                 if(brushStart){
                     this.isBrush = true;
                     this.endTime = this.videoTime;
-                    this.ClickAttackData = [];
-                    this.ClickAttackData.push(this.courseId);
-                    this.ClickAttackData.push(this.videoLength);
-                    this.ClickAttackData.push(this.isBrush);
-                    this.ClickAttackData.push(this.isFinished);
-                    this.ClickAttackData.push(this.startTime);
-                    this.ClickAttackData.push(this.endTime);
+                    this.clickAttackData = [];
+                    this.clickAttackData.push(this.courseId);    //0
+                    this.clickAttackData.push(this.videoLength); //1
                 }
             },
             mouseDownRes(){
@@ -224,20 +463,19 @@
                 this.brushStart =true;
             },
             callFunc(response){
-                this.ClickAttackData = [];
-                this.ClickAttackData.push(this.courseId);
-                this.ClickAttackData.push(this.videoLength);
-                this.ClickAttackData.push(this.isBrush);
-                this.ClickAttackData.push(this.isFinished);
-                this.ClickAttackData.push(this.startTime);
-                this.ClickAttackData.push(this.endTime);
-                this.ClickAttackData.push(response.data);
+                this.clickAttackData = [];
+                this.clickAttackData.push(this.courseId);       //0
+                this.clickAttackData.push(this.videoLength);    //1
+                this.clickAttackData.push(response.data);       //2
+          
+                this.createMap();
+                this.upDateMapAndFlow();
             },
             processData(response){
                 var data = response.data;
                 var colors = this.colors;
                 if (!data.clicks) return;
-                this.chartData = data.clicks.map(function (dat) {
+                this.chartDataCache = data.clicks.map(function (dat) {
                     var length = dat.data.length;
                     var result = dat.data.slice(3, length - 3)
                         .aggregate(3)
@@ -253,8 +491,21 @@
                         color: colors(dat.type)
                     };
                 });
+            },
+            RenderStackAreaChart(){
+                //Can't be render in the right way when some of it's parent's display is none
+                var self = this;
+                setTimeout(function(){
+                    self.chartData = self.chartDataCache;
+                },300)
             }
         }
         
     }
+
 </script>
+
+
+<style>
+
+</style>

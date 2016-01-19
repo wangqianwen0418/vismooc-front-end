@@ -26,6 +26,10 @@ export default {
             .controlLabels({ stacked: "Stacked" })
         ;
         
+        if(config.width) {
+            chart.width(config.width);
+            d3.select(this.el).style('width',config.width);
+        }
         chart.xAxis
             .showMaxMin(config.xAxis.showMaxMin || false)
             .tickFormat(config.xAxis.tickFormat)
@@ -42,6 +46,8 @@ export default {
             this.changeCourse = false;
         }
         d3.select(this.el)
+            .style('height',config.height)
+
             .datum(newVal)
             .transition().duration(1000)
             .call(chart)

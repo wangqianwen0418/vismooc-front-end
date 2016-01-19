@@ -252,7 +252,6 @@
 }
 
 #stacked-area-graph {
-	height:300px; 
     width: calc(100% + 40px);
 }
 

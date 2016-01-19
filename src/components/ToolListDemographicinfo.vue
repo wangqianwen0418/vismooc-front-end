@@ -93,21 +93,25 @@
                         },
                         data:geoData,
                         geographyConfig:{ 
+                            borderColor: '#dddddd',
                             popupTemplate: function (geo, data) {
                                 return ['<div class="hoverinfo"><strong>',
                                     geo.properties.name + ' : ' + data.count,
                                     '</strong></div>'].join('');
                             }
+                        },
+                        done: function(datamap) {
+                            datamap.svg.selectAll('.datamaps-subunit').on('click', function(d) {
+                                self.filterByCountry(d.id);
+                            });
                         }
                     });
                     
-                    d3.select("#demographic-info-modal-body")
-                        .selectAll('.datamaps-subunit')
-                        .style('stroke', '#dddddd')
-                        .on('click', function (d) {
-                            console.log(d.id);
-                            self.filterByCountry(d.id);
-                        });
+                    // d3.select("#demographic-info-modal-body")
+                    //     .selectAll('.datamaps-subunit')
+                    //     .on('click', function (d) {
+                    //         self.filterByCountry(d.id);
+                    //     });
                 } else{
                     this.complexObject.map.updateChoropleth(geoData);
                 }

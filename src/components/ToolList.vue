@@ -114,4 +114,14 @@
     .modal-less-lg {
         width: 800px;
     }
+    
+    .modal-more-lg {
+        width: 1000px;
+    }
+    
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
 </style>
