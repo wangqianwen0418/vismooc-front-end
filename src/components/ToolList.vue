@@ -116,7 +116,7 @@
     }
     
     .modal-more-lg {
-        width: 1000px;
+        width: 1200px;
     }
     
 .brush .extent {

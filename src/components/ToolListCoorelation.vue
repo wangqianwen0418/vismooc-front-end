@@ -2,7 +2,7 @@
 
     <div id="coorelation-info-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="coorelation-info-modal-label"
     aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-more-lg" role="document">
 
             <div class="modal-content">
 
@@ -13,10 +13,10 @@
 
                 <div class="modal-body">
                     <div style="width: 100%; height: 500px;">
-                        <div class="peak_parrellel">
-                            <div class="peak_parrellel_container" id="parrellel_container">
+                        <div class="peak-parrellel">
+                            <div class="peak-parrellel-container" id="parrellel-container">
 
-                                <div class="row clearfix" style="height: 15%;" id="parrellel_controller_bar">
+                                <div class="row clearfix" style="height: 15%;" id="parrellel-controller-bar">
                                     <div class="col-md-12 column">
                                         <div class="row clearfix">
                                             <div class="col-md-6 column">
@@ -30,9 +30,9 @@
                                     </div>
                                 </div>
 
-                                <div class="row clearfix" style="height: 85%;" id="parrellel_coordinate">
+                                <div class="row" style="height: 85%;" id="parrellel-coordinate">
                                     <div class="col-md-12 column" style="height: 100%">
-                                        <div id="parcoords" class="parcoords" data="PCData"></div>
+                                        <div id="parcoords" class="parcoords"></div>
                                     </div>
                                 </div>
 
@@ -121,21 +121,18 @@
                     arr.push(obj);
                 }
                 this.PCData = [];
-                this.PCData.push(this.courseId);
                 this.PCData.push(peakNum);
                 this.PCData.push(arr);
                 this.createParcoords();
             },
             createParcoords(){
                 var width = $("#parcoords").width();
-                var height = $("#parcoords").height();
-
+                var height = 400;
                 if (this.PCData) {
                     var data = this.PCData;
                     var isDrawline = false;
-                    var courseId = data[0];
-                    var peakNum = data[1];
-                    var dataTmp = data[2];
+                    var peakNum = data[0];
+                    var dataTmp = data[1];
                     var dataSub = [];
                     var dataFiltered = [];
                     var fidelityUp = 20;
@@ -178,12 +175,13 @@
                         obj['loyalty'] = seekCount;
                         dataSub.push(obj);
                     }
-                    console.log(dataSub);
 
                     var pc = d3.parcoords()("#parcoords")
                         .data(dataSub)
                         .bundlingStrength(0)
                         .smoothness(0)
+                        .width(width)
+                        .height(height)
                         .color("#FE7E13")
                         .alpha(0.05)
                         .margin({top: 24, left: 20, bottom: 12, right: 0})
@@ -198,15 +196,15 @@
                             .domain([20.5, 0.5])
                             .range([0, height - 35]);
                     }
-                    
-                    
-                 pc.render()
+
+                    pc.render()
                         .createAxes()
-                        //.shadows()
+                        .shadows()
                         .reorderable()
                         .brushMode("1D-axes");
 
-                    d3.select("#filterLow").on("change", function () {
+                    d3.select("#filterLow")
+                    .on("change", function () {
                         fidelityLow = this.value;
                         d3.select("#lowerBound").text(this.value);
 
@@ -232,21 +230,20 @@
                     });
 
                     //change opacity
-                    d3.select("#filterUp").on("change", function () {
+                    d3.select("#filterUp")
+                    .on("change", function () {
                         var opacity = this.value;
                         d3.select("#upperBound").text(this.value);
-
-                        pc
-                            .alpha(opacity)
+                        pc.alpha(opacity)
                             .render();
                     });
 
                     //change drawing mode
-                    d3.select("#changemodebutton").on("click", function () {
+                    d3.select("#changemodebutton")
+                    .on("click", function () {
                         console.log(isDrawline);
                         isDrawline = !isDrawline;
-                        pc
-                            .isDrawline(isDrawline)
+                        pc.isDrawline(isDrawline)
                             .render();
                     });
 
@@ -271,3 +268,8 @@
     }
 
 </script>
+
+
+<style>
+    
+</style>

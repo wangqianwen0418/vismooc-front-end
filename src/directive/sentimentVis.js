@@ -280,7 +280,7 @@ export default{
             return tempScale(yValue);
         };
 
-        this.setPlotSummary = function () {
+        this.updatePlot = function () {
             if (!this.sentimentData[0][xVar]) return false;
             
             if (this.params.config.isDetail) {
@@ -415,10 +415,9 @@ export default{
 
     },
     update(newVal, oldVal) {
-        console.log(newVal);
         if (!newVal) return;
         this.sentimentData = newVal;
 
-        this.setPlotSummary();
+        this.updatePlot();
     }
 }

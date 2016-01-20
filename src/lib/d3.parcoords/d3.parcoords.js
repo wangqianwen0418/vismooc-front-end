@@ -572,16 +572,51 @@ function getNullPosition() {
 	return h()+1;
 };
 
+/*
+
+//original function single_path ->
 function single_path(d, ctx) {
 	__.dimensions.map(function(p, i) {
-        
+		if (i == 0) {
+			ctx.moveTo(position(p), yscale[p](d[p]));
+		} else {
+			ctx.lineTo(position(p), yscale[p](d[p]));
+		}
+	});
+}
+*/
+
+function single_path(d, ctx) {
+	__.dimensions.map(function(p, i) {
+        var barsize = 10;
         if(__.isDrawline){
+            barsize = 5;
             if (i == 0) {
                 ctx.moveTo(position(p), typeof d[p] =='undefined' ? getNullPosition() : yscale[p](d[p]));
             } else {
                 ctx.lineTo(position(p), typeof d[p] =='undefined' ? getNullPosition() : yscale[p](d[p]));
             }
 		}
+        
+        //Below is modified by YuanZhe
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+        ctx.beginPath();
+        if(i == 0)  ctx.lineWidth = __.height/23;
+        if(i == 1)  ctx.lineWidth = __.height/100;
+        if(i == 2)  ctx.lineWidth = __.height/122;
+        if(i == 3)  ctx.lineWidth = __.height/100;
+        if(i == 4)  ctx.lineWidth = __.height/23;
+        if(i == 5)  ctx.lineWidth = 1;
+        if(i == 6)  ctx.lineWidth = 1;
+        if(i == 7)  ctx.lineWidth = 1;
+        ctx.lineWidth = Math.floor(__.height / 20);
+        ctx.moveTo(position(p) - barsize, yscale[p](d[p]));
+        ctx.lineTo(position(p) + barsize, yscale[p](d[p]));
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(position(p), yscale[p](d[p]));
+        //Above is modified by Yuanzhe
 	});
 };
 
@@ -897,11 +932,56 @@ var brush = {
 //
 // @param newSelection - The new set of data items that is currently contained
 //                       by the brushes
+
+/*Original function brushUpdate -> 
 function brushUpdated(newSelection) {
   __.brushed = newSelection;
   events.brush.call(pc,__.brushed);
   pc.renderBrushed();
 }
+*/
+
+function brushUpdated(newSelection) {
+    __.brushed = newSelection;
+    if(__.brushed.length) {
+        //for automatic reorder the axis
+        var attrAxisNum = 8;
+        var axisKeys = Object.keys(__.brushed[0]);
+        var peakNum = axisKeys.length - attrAxisNum;
+        var countfororder = [];
+        for (var mi = 0; mi < peakNum; mi++) {
+            countfororder.push({'index': mi, 'count': 0});
+        }
+        for (var mi = 0; mi < __.brushed.length; mi++) {
+            for (var mj = 0; mj < peakNum; mj++) {
+                if (__.brushed[mi]['Peak' + mj] > 0) countfororder[mj].count++;
+            }
+        }
+        countfororder.sort(function (a, b) {
+            return b.count - a.count
+        });
+        var brushedTemp = [];
+        for (var mi = 0; mi < __.brushed.length; mi++) {
+            var obj = {};
+            for (var mj = 0; mj < attrAxisNum; mj++) {
+                obj[axisKeys[mj]] = __.brushed[mi][axisKeys[mj]];
+            }
+            for (var mj = 0; mj < peakNum; mj++) {
+                var keyName = 'Peak' + countfororder[mj].index;
+                obj['Peak' + mj] = __.brushed[mi][keyName];
+            }
+            brushedTemp.push(obj);
+        }
+        for(var mi = 0; mi < peakNum; mi++){
+            __.dimensions[mi + attrAxisNum] = 'Peak' + countfororder[mi].index;
+        }
+    }
+    events.brush.call(pc,__.brushed);
+    xscale.domain(__.dimensions);
+    pc.renderBrushed();
+}
+
+
 
 function brushPredicate(predicate) {
   if (!arguments.length) { return brush.predicate; }
@@ -1088,6 +1168,7 @@ pc.brushMode = function(mode) {
     return pc;
   };
 
+/*original function brushFor ->
   function brushFor(axis) {
     var brush = d3.svg.brush();
 
@@ -1108,6 +1189,30 @@ pc.brushMode = function(mode) {
     brushes[axis] = brush;
     return brush;
   };
+  */
+  
+    function brushFor(axis) {
+        var brush = d3.svg.brush();
+        
+        brush
+        .y(yscale[axis])
+        .on("brushstart", function() {
+            if(d3.event.sourceEvent !== null) {
+                d3.event.sourceEvent.stopPropagation();
+            }
+        })
+        .on("brush", function() {
+            brushUpdated(selected());
+        })
+        .on("brushend", function() {
+            events.brushend.call(pc, __.brushed);
+            g.attr("transform", function(d) { return "translate(" + position(d) + ")"; });
+        });
+
+        brushes[axis] = brush;
+        return brush;
+    }
+  
   function brushReset(dimension) {
     __.brushed = false;
     if (g) {
