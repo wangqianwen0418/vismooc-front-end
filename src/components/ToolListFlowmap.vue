@@ -307,7 +307,8 @@
                 //set the color range
                 var color = d3.scale.linear().range(['#ffffe5', '#41ab5d']).domain([0, Math.log(max+1)]);
                 for(var p in geoData){
-                    geoData[p].fillColor = color(Math.log(geoData[p].count));
+                    if(geoData.hasOwnProperty(p))
+                        geoData[p].fillColor = color(Math.log(geoData[p].count));
                 }
                 
                 this.complexObject.map.updateChoropleth(geoData);
@@ -320,9 +321,8 @@
                 var svg = this.complexObject.flow;
                 
                 //clear previous svg
-                // svg.selectAll("path").remove();
-                // svg.selectAll("circle").remove();
-                // svg.selectAll("rect").remove();              
+                svg.selectAll("path").remove();
+                svg.selectAll("circle").remove();       
                 
                 var timelinePos = 400  - 60,
                     pathColor = "#FE7E13",
@@ -342,7 +342,7 @@
                 var geoCoorCalculate = function(longitude, latitude) {
                     var coor = {};
                     coor.x = longitude * width;
-                    coor.y = latitude * 400;
+                    coor.y = latitude * 250 + 40;
                     return coor;
                 }
 
@@ -395,8 +395,7 @@
                 }
 
                 for (var i = 0; i < countryTop.length; i++) {
-                    var geoCoorTemp = {};
-                    geoCoorTemp = geoCoorCalculate(countryMax[countryTop[i]].longitude, countryMax[countryTop[i]].latitude);
+                    var geoCoorTemp = geoCoorCalculate(countryMax[countryTop[i]].longitude, countryMax[countryTop[i]].latitude);
                     radius = Math.log(countryMax[countryTop[i]].clickNum * circleRadius);
                     if (radius < 0.1) radius = 0.1;
                     svg.append("circle")
@@ -416,51 +415,6 @@
                         .attr("opacity", innerCircleOpacity);
                 }
                 
-            },
-            brushStart(){
-                
-            },
-            brush(){
-                
-            },
-            brushEnd(){
-                
-            },
-            mouseUpRes(){
-                var endTime = this.videoTime;
-                var startTime;
-                this.isFinished = true;
-                if(!isBrush){
-                    startTime = endTime;
-                    endTime = (+startTime) + 3;
-                }
-                if((+endTime) < (+startTime)){
-                    var temp = endTime;
-                    endTime = startTime;
-                    startTime = temp;
-                }
-                if((+endTime) < (+startTime) + 3) endTime = (+startTime) + 3;
-                
- 
-                this.isBrush =false;
-                this.brushStart = false;
-                
-                //TODO video API
-                //this.videogularAPI.seekTime(startTime);
-            },
-            moveRes(){
-                if(brushStart){
-                    this.isBrush = true;
-                    this.endTime = this.videoTime;
-                    this.clickAttackData = [];
-                    this.clickAttackData.push(this.courseId);    //0
-                    this.clickAttackData.push(this.videoLength); //1
-                }
-            },
-            mouseDownRes(){
-                this.startTime = this.videoTime;
-                this.isFinished = false;
-                this.brushStart =true;
             },
             callFunc(response){
                 this.clickAttackData = [];
