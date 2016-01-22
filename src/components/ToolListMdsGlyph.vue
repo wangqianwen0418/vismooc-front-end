@@ -13,9 +13,9 @@
 
                 <div class="modal-body">
                     <div style="width: 100%; height: 500px;">
-                        <div class="peak_graphmds">
-                            <div class="peak_graphmds_container" id="graphmds_container">
-                                <mds-glyph ></mds-glyph>
+                        <div class="peak-graphmds">
+                            <div class="peak-graphmds-container" id="graphmds-container">
+                                <svg v-mds-glyph="graphData" :config="mdsConfig"></svg>
                             </div>
                         </div>
                     </div>
@@ -41,13 +41,18 @@
 <script>
     //js
     import d3 from 'd3';
-
+    
+    //directive
+    import MDSGlyph from '../directive/mdsglyph.js';
     //service
     import MDS from '../service/mds.js';
     import dataManager from '../service/datamanager.js';
     import communicator from '../service/communicator.js';
     
     export default {
+        directives:{
+            mdsGlyph:MDSGlyph
+        },
         ready(){
             
             //select the modal then append it to the last of <body>
@@ -218,15 +223,23 @@
             });
             
             
-            
         },
         data(){
             return{
-              courseId:-1
-
+              courseId:-1,
+              videoListHash:null,
+              peaks:null,
+              graphData:null,
+              mdsConfig:{
+                  width:500,
+                  height:500
+              }
             };
         },
         methods:{
+            mdsGlyphChangeVideo(videoInfo){
+                communicator(this).emitChangeVideo(videoInfo);
+            },
             intersect(a, b) {
                 var t;
                 if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
