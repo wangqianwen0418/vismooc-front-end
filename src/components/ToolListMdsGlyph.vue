@@ -2,7 +2,7 @@
 
     <div id="mds-glyph-modal" class="modal fade" tabindex="-1"  role="dialog" aria-labelledby="mds-glyph-modal-label"
     aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
 
             <div class="modal-content">
 
@@ -12,12 +12,8 @@
                 </div>
 
                 <div class="modal-body">
-                    <div style="width: 100%; height: 500px;">
-                        <div class="peak-graphmds">
-                            <div class="peak-graphmds-container" id="graphmds-container">
-                                <svg v-mds-glyph="graphData" :config="mdsConfig"></svg>
-                            </div>
-                        </div>
+                    <div class="peak-graphmds-container">
+                        <svg v-mds-glyph="graphData" :config="mdsConfig"></svg>
                     </div>
                 </div>
 
@@ -231,7 +227,7 @@
               peaks:null,
               graphData:null,
               mdsConfig:{
-                  width:500,
+                  width:880,
                   height:500
               }
             };
@@ -282,3 +278,12 @@
     }
 
 </script>
+
+<style>
+
+.graphnode {
+    stroke: #fff;
+    stroke-width: 2px;
+    cursor: pointer;
+}
+</style>

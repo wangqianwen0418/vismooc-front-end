@@ -71,119 +71,9 @@ export default {
             }
         };
 
-        var glyph = function (svg) {
-            console.log(this);
-            console.log(svg);
-            svg.append("title")
-            .text(function (d, i) { return i; })
-            var peak = peaks[peak];
-            var rbWidth = 20,
-                rbHeight = 20,
-                plotSize = 5,
-                barOffset = 5,
-                width = peak.actionWidth,
-                height = peak.actionHeight,
-                rightBarRectPosition = peak.videoWeekPosition,
-                bottomBarRectPosition = peak.actionPosition,
-                grade = peak.grade,
-                anomaly = peak.anomaly;
-
-            var color = d3.scale.linear().range(['#fff7fb', '#014636']);
-            color.domain([0, 1]);
-
-            var svg = d3.select([0])
-                .attr('width', width)
-                .attr('height', height);
-
-            // drawRect
-            var rectWidth = width - rbWidth,
-                rectHeight = height - rbHeight;
-
-            var rect = svg.append('g')
-                .attr('transform', 'translate(1, 1)');
-
-            rect.append('rect')
-                .attr('width', rectWidth)
-                .attr('height', rectHeight)
-                .attr('x', -rectWidth / 2)
-                .attr('y', -rectHeight / 2)
-                .style('stroke', '#251818')
-                .style('stroke-width', 1)
-                .style('fill', 'none');
-
-            //draw grade
-            var h = 0;
-            var gradeColor = ["#2DA464", "#9CCF70", "#DBE697", "#FAE195", "#F6986A", "#DB453D"];
-            for (var i = 0; i < grade.length; i++) {
-                h += grade[i] * rectWidth;
-                rect.append("rect")
-                    .attr('x', rectWidth / 2 - h)
-                    .attr('y', -rectHeight / 2)
-                    .attr('width', grade[i] * rectWidth)
-                    .attr('height', rectHeight)
-                    .style("fill", gradeColor[i])
-                    .style('stroke-width', 0);
-            }
-
-            //draw anomaly line
-            rect.append('line')
-                .attr('x1', 0 - rectWidth / 2)
-                .attr('y1', -anomaly * rectHeight + rectHeight / 2)
-                .attr('x2', rectWidth / 2)
-                .attr('y2', -anomaly * rectHeight + rectHeight / 2)
-                .style('stroke', '#000000')
-            //.style('stroke', '#3E3838')
-                .style('stoke-width', 1);
-
-            // drawrightBar
-            var rightBar = svg.append('g')
-                .attr('transform', 'translate(1, 1)');
-
-            rightBar.append('line')
-                .attr('x1', rectWidth / 2 + barOffset)
-                .attr('y1', -rectHeight / 2)
-                .attr('x2', rectWidth / 2 + barOffset)
-                .attr('y2', rectHeight / 2)
-                .style('stroke', 'rgb(99,99,99)')
-                .style('stoke-width', 1);
-
-            rightBar.append('rect')
-                .attr('x', rectWidth / 2 + barOffset - plotSize / 2)
-                .attr('y', rightBarRectPosition * rectHeight - rectWidth / 2)
-                .attr('width', plotSize)
-                .attr('height', plotSize)
-                .style('fill', 'blue')
-                .style('stroke-width', 0)
-                .style('fill-opacity', 0.8);
-
-            // drawtbottomBar
-            var bottomBar = svg.append('g')
-                .attr('transform', 'translate(1,1)');
-
-            bottomBar.append('line')
-                .attr('x1', -rectWidth / 2)
-                .attr('y1', rectHeight / 2 + barOffset)
-                .attr('x2', rectWidth / 2)
-                .attr('y2', rectHeight / 2 + barOffset)
-                .style('stroke', 'rgb(99,99,99)')
-                .style('stoke-width', 1);
-
-            bottomBar.append('rect')
-                .attr('x', bottomBarRectPosition * rectWidth - rectWidth / 2)
-                .attr('y', rectHeight / 2 + barOffset - plotSize / 2)
-                .attr('width', plotSize)
-                .attr('height', plotSize)
-                .style('fill', 'blue')
-                .style('stroke-width', 0)
-                .style('fill-opacity', 0.8);
-        };
-
-
-      
-
         preventOverlap(coordinate, 35, 30);
 
-        var selection = svg.append('g').selectAll(".graphnode")
+        svg = svg.append('g').selectAll(".graphnode")
             .data(peaks)
             .enter().append("g")
             .attr('transform', function (d, i) { return 'translate(' + coordinate[i][0] + ', ' + coordinate[i][1] + ')'; })
@@ -192,8 +82,96 @@ export default {
                 videoListHash[peakBasicInfo[i].videoId].currentTime = peakBasicInfo[i].currentTime;
                 self.vm.mdsGlyphChangeVideo(videoListHash[peakBasicInfo[i].videoId]);
             })
-            .call(glyph);
-       
+        svg.append("title").text(function (d, i) { return nodes[i].name; });
+
+        var rbWidth = 20,
+            rbHeight = 20,
+            plotSize = 5,
+            barOffset = 5;
+
+        var rect = svg.append('g')
+            .attr('transform', 'translate(1, 1)');
+
+        rect.append('rect')
+            .attr('width', function (d, i) { return d.actionWidth - rbWidth; })
+            .attr('height', function (d, i) { return d.actionHeight - rbHeight; })
+            .attr('x', function (d, i) { return (rbWidth - d.actionWidth) / 2; })
+            .attr('y', function (d, i) { return (rbHeight - d.actionHeight) / 2; })
+            .style('stroke', '#251818')
+            .style('stroke-width', 1)
+            .style('fill', 'none');
+
+        var gradeColor = ["#2DA464", "#9CCF70", "#DBE697", "#FAE195", "#F6986A", "#DB453D"];
+        rect.each(function (d) {
+            var h = 0;
+            var grade = d.grade;
+            var rectWidth = d.actionWidth - rbWidth;
+            var rectHeight = d.actionHeight - rbHeight;
+            var thisRectG = d3.select(this);
+            for (var i = 0, len = grade.length; i < len; ++i) {
+                h += grade[i] * rectWidth;
+                thisRectG.append('rect')
+                    .attr('x', rectWidth / 2 - h)
+                    .attr('y', -rectHeight / 2)
+                    .attr('width', grade[i] * rectWidth)
+                    .attr('height', rectHeight)
+                    .style('fill', gradeColor[i])
+                    .style('stroke-width', 0)
+                ;
+            }
+
+        });
+            
+        //draw anomaly line
+        rect.append('line')
+            .attr('x1', function (d, i) { return (rbWidth - d.actionWidth) / 2; })
+            .attr('y1', function (d, i) { return -d.anomaly * (d.actionHeight - rbHeight) + (d.actionHeight - rbHeight) / 2; })
+            .attr('x2', function (d, i) { return (d.actionWidth - rbWidth) / 2; })
+            .attr('y2', function (d, i) { return -d.anomaly * (d.actionHeight - rbHeight) + (d.actionHeight - rbHeight) / 2; })
+            .style('stroke', '#000000')
+            .style('stoke-width', 1);
+
+        // drawrightBar
+        var rightBar = svg.append('g')
+            .attr('transform', 'translate(1, 1)');
+
+        rightBar.append('line')
+            .attr('x1', function (d, i) { return (d.actionWidth - rbWidth) / 2 + barOffset; })
+            .attr('y1', function (d, i) { return (rbHeight - d.actionHeight) / 2; })
+            .attr('x2', function (d, i) { return (d.actionWidth - rbWidth) / 2 + barOffset; })
+            .attr('y2', function (d, i) { return (d.actionHeight - rbHeight) / 2; })
+            .style('stroke', 'rgb(99,99,99)')
+            .style('stoke-width', 1);
+
+        rightBar.append('rect')
+            .attr('x', function (d, i) { return (d.actionWidth - rbWidth) / 2 + barOffset - plotSize / 2; })
+            .attr('y', function (d, i) { return d.videoWeekPosition * (d.actionHeight - rbHeight) - (d.actionWidth - rbWidth) / 2; })
+            .attr('width', plotSize)
+            .attr('height', plotSize)
+            .style('fill', 'blue')
+            .style('stroke-width', 0)
+            .style('fill-opacity', 0.8);
+
+        // drawtbottomBar
+        var bottomBar = svg.append('g')
+            .attr('transform', 'translate(1,1)');
+
+        bottomBar.append('line')
+            .attr('x1', function (d, i) { return (rbWidth - d.actionWidth) / 2; })
+            .attr('y1', function (d, i) { return (d.actionHeight - rbHeight) / 2 + barOffset; })
+            .attr('x2', function (d, i) { return (d.actionWidth - rbWidth) / 2; })
+            .attr('y2', function (d, i) { return (d.actionHeight - rbHeight) / 2 + barOffset; })
+            .style('stroke', 'rgb(99,99,99)')
+            .style('stoke-width', 1);
+
+        bottomBar.append('rect')
+            .attr('x', function (d, i) { return d.actionPosition * (d.actionWidth - rbWidth) - (d.actionWidth - rbWidth) / 2; })
+            .attr('y', function (d, i) { return (d.actionHeight - rbHeight) / 2 + barOffset - plotSize / 2; })
+            .attr('width', plotSize)
+            .attr('height', plotSize)
+            .style('fill', 'blue')
+            .style('stroke-width', 0)
+            .style('fill-opacity', 0.8);
 
     }
 
