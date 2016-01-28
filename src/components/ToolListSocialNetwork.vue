@@ -52,10 +52,16 @@
     import topojson from 'topojson';
     import Datamap from 'datamaps';
 
+    //directives
+    import socialNetwork from '../directive/socialNetwork.js';
+    
        //service
     import dataManager from '../service/datamanager.js';
     import communicator from '../service/communicator.js';
     export default {
+        directives:{
+            socialNetwork:socialNetwork
+        }
         ready(){
             this.complexObject = {};
             //select the modal then append it to the last of <body>

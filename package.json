@@ -36,7 +36,8 @@
     "vue-router": "^0.7.5",
     "vue-style-loader": "^1.0.0",
     "webpack": "^1.12.10",
-    "webpack-dev-server": "^1.12.1"
+    "webpack-dev-server": "^1.12.1",
+    "wordcloud": "^1.0.1"
   },
   "author": "me",
   "scripts": {
