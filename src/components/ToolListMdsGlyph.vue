@@ -1,7 +1,6 @@
 <template>
 
-    <div id="mds-glyph-modal" class="modal fade" tabindex="-1"  role="dialog" aria-labelledby="mds-glyph-modal-label"
-    aria-hidden="true">
+    <div id="mds-glyph-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mds-glyph-modal-label" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
 
             <div class="modal-content">
@@ -53,10 +52,7 @@
             
             //select the modal then append it to the last of <body>
             $("#mds-glyph-modal").appendTo("body");
-                    
-            var w = d3.scale.linear().range([30, 60]);
-            var h = d3.scale.linear().range([30, 45]);
-            var self = this;
+
             communicator(this).onChangeCourse((courseId)=>{
                 this.courseId = courseId;
 
@@ -70,152 +66,11 @@
                             videoListHash[dd.videoId] = dd;
                         });
                     });
-                    self.videoListHash = videoListHash;
+                    this.videoListHash = videoListHash;
                 });
 
-                var weekNum = (courseId == 4) ? 10 : 4;
-                dataManager.getGlyphInfo(courseId,(response)=>{
 
-                        var colors = [],
-                            usedcolors = 0;
-                        // get nodes
-                        var nodes = [];	
-                        var data = response.data;				
-                        data.forEach(function(d){
-                            var tmpNode = {};
-                            var tmpcolor = self.getMyColor(d.videoId, colors);
-
-                            if (tmpcolor != null){
-                                tmpNode['group'] = tmpcolor;
-                            } else{
-                                usedcolors++;
-                                colors.push({
-                                    'videoId': d.videoId,
-                                    'color': usedcolors
-                                });
-                                tmpNode['group'] = usedcolors;
-                            }
-                            nodes.push(tmpNode);
-                        });
-
-                        // get links,    there are links for those whose similarity >=0.5
-                        var links = [];
-                        var linkCount = [];
-                        for(let i = 0,len = data.length; i < len; ++i ){
-                            linkCount.push(0);
-                        }
-
-                        var simMatrix = [];
-                        d3.range(data.length).forEach(function(){
-                            simMatrix.push(d3.range(data.length));
-                        });
-                        var minSim = 1, maxSim = 0;
-                        for (var i = 0, obj1; obj1 = data[i]; i++){
-                            var simTh = 0.2;
-                            simMatrix[i][i] = 1;
-                            for (var j = i + 1, obj2; obj2 = data[j]; j++) {
-                                var sim = self.getSimilarity(obj1.peopleInfo, obj2.peopleInfo);
-                                simMatrix[i][j] = simMatrix[j][i] = sim;
-                                if (minSim > sim)
-                                    minSim = sim;
-                                if (maxSim < sim)
-                                    maxSim = sim;
-
-                                if (sim >= simTh){
-                                    var tmpLink = {};
-                                    tmpLink['source'] = i;
-                                    tmpLink['target'] = j;
-                                    tmpLink['strength'] = sim;
-                                    links.push(tmpLink);
-                                }
-                            }
-                        }
-                        var fs = d3.scale.linear().range([1, 0]).domain([minSim, maxSim]).clamp(true);
-                        d3.range(data.length).forEach(function(row){
-                            d3.range(data.length).forEach(function(column){
-                                simMatrix[row][column] = fs(simMatrix[row][column]);
-                            });
-                        });
-                        var coordinate = MDS.mds(simMatrix);
-
-
-                        w.domain(d3.extent(data, function(d){ return d.peakWidth }));
-                        h.domain(d3.extent(data, function(d){ return d.actionNum }));
-
-                        var peaks = data.map(function(d){
-                            var actionWidth = w(d.peakWidth) + 20;
-                            var actionHeight = h(d.actionNum) + 20;
-                            var actionPosition = d.currentTime/d.videoLength;
-                            var videoWeekPosition = d.week / ( weekNum + 1);
-                            var line1Position = 1 - d.peopleInfo.length / d.actionNum;
-
-                            var peopleInfo = d.peopleInfo.sort(function(a, b){ return b.Count - a.Count; });
-                            var nowCount = 0;
-                            var upLimit = Math.floor(d.actionNum*0.9);
-                            for (var i = 0, count; count = peopleInfo[i].Count; i++){
-                                if (nowCount >= upLimit)
-                                    break;
-                                nowCount += count;
-                            }
-
-                            var line2Position = i / d.peopleInfo.length;
-
-                            //calculate the distribution
-                            var countArr = [];
-                            var sum = 0;
-                            var std = 0;
-                            var anomaly = 0;
-                            for(var i = 0; i < d.peopleInfo.length; i++){
-                                countArr.push(d.peopleInfo[i].Count);
-                                sum += d.peopleInfo[i].Count;
-                                if(d.peopleInfo[i].Count > 10)  anomaly += d.peopleInfo[i].Count;
-                            }
-                            anomaly /= sum;
-                            var average = sum/d.peopleInfo.length;
-                            for(var i = 0; i < d.peopleInfo.length; i++){
-                                std += Math.sqrt((average - d.peopleInfo[i].Count) * (average - d.peopleInfo[i].Count));
-                            }
-                            std /= d.peopleInfo.length;
-
-                            return {
-                                'actionWidth': actionWidth,
-                                'actionHeight': actionHeight,
-                                'actionPosition': actionPosition,
-                                'videoWeekPosition': videoWeekPosition,
-                                'line1Position': line1Position,
-                                'line2Position': line2Position,
-                                //'grade': grade,
-                                'index': data.indexOf(d),
-                                'ave': average,
-                                'std': std,
-                                'anomaly': anomaly
-                            }
-                        });
-
-                        for(var i = 0; i < peaks.length; i++){
-                            var sum = data[i].grade.reduce(function(pv, cv) { return pv + cv; }, 0);
-                            var w1 = d3.scale.linear().range([(peaks[i].actionWidth - 20) * 0.3, (peaks[i].actionWidth - 20) * 1]);
-                            var h1 = d3.scale.linear().range([(20-peaks[i].actionWidth), (peaks[i].actionWidth - 20)]);
-                            w1.domain(d3.extent(peaks, function(d){ return d.ave }));
-                            h1.domain(d3.extent(peaks, function(d){ return d.std }));
-                            peaks[i].distrAve = w1(peaks[i].ave);
-                            peaks[i].distrStd = h1(peaks[i].std);
-                            peaks[i].grade = [];
-                            for(var j = 0; j < data[i].grade.length; j++){
-                                peaks[i].grade.push(data[i].grade[j]/sum);
-                            }
-                        }
-
-                        var finalData = {
-                            'nodes': nodes,
-                            'links': links,
-                            'peaks': peaks,
-                            'coordinate': coordinate,
-                            'peakBasicInfo': data
-                        };
-                        self.peaks = peaks;
-                        self.graphData = finalData;
-                    });
+                dataManager.getGlyphInfo(courseId,this.processData);
             });
             
             
@@ -233,8 +88,149 @@
             };
         },
         methods:{
-            mdsGlyphChangeVideo(videoInfo){
-                communicator(this).emitChangeVideo(videoInfo);
+            processData(response){
+                var self = this;
+                var weekNum = (this.courseId == 4) ? 10 : 4;
+                var w = d3.scale.linear().range([30, 60]);
+                var h = d3.scale.linear().range([30, 45]);
+                var data = response.data;		
+                var colors = [],
+                    usedcolors = 0;
+                // get nodes
+                var nodes = [];			
+                data.forEach(function(d){
+                    var tmpNode = {};
+                    var tmpcolor = self.getMyColor(d.videoId, colors);
+
+                    if (tmpcolor != null){
+                        tmpNode['group'] = tmpcolor;
+                    } else{
+                        ++usedcolors;
+                        colors.push({
+                            'videoId': d.videoId,
+                            'color': usedcolors
+                        });
+                        tmpNode['group'] = usedcolors;
+                    }
+                    nodes.push(tmpNode);
+                });
+
+                // get links, there are links for those whose similarity >=0.5
+                var links = [];
+                var linkCount = [];
+                for(let i = 0,len = data.length; i < len; ++i ){
+                    linkCount.push(0);
+                }
+
+                var simMatrix = [];
+                for(let i = 0, len = data.length; i < len; ++i){
+                    simMatrix.push(d3.range(data.length));
+                }
+                // d3.range(data.length).forEach(function(){
+                    
+                // });
+                var minSim = 1, maxSim = 0;
+                for (let i = 0, obj1; obj1 = data[i]; ++i){
+                    var simTh = 0.2;
+                    simMatrix[i][i] = 1;
+                    for (let j = i + 1, obj2; obj2 = data[j]; ++j) {
+                        var sim = self.getSimilarity(obj1.peopleInfo, obj2.peopleInfo);
+                        simMatrix[i][j] = simMatrix[j][i] = sim;
+                        if (minSim > sim) minSim = sim;
+                        if (maxSim < sim) maxSim = sim;
+
+                        if (sim >= simTh){
+                            links.push({
+                                'source' : i,
+                                'target' : j,
+                                'strength' : sim
+                            });
+                        }
+                    }
+                }
+                var fs = d3.scale.linear().range([1, 0]).domain([minSim, maxSim]).clamp(true);
+                d3.range(data.length).forEach(function(row){
+                    d3.range(data.length).forEach(function(column){
+                        simMatrix[row][column] = fs(simMatrix[row][column]);
+                    });
+                });
+                var coordinate = MDS.mds(simMatrix);
+
+                w.domain(d3.extent(data, function(d){ return d.peakWidth }));
+                h.domain(d3.extent(data, function(d){ return d.actionNum }));
+
+                var peaks = data.map(function(d){
+                    var actionWidth = w(d.peakWidth) + 20;
+                    var actionHeight = h(d.actionNum) + 20;
+                    var actionPosition = d.currentTime/d.videoLength;
+                    var videoWeekPosition = d.week / ( weekNum + 1);
+                    var line1Position = 1 - d.peopleInfo.length / d.actionNum;
+
+                    var peopleInfo = d.peopleInfo.sort(function(a, b){ return b.Count - a.Count; });
+                    var nowCount = 0;
+                    var upLimit = Math.floor(d.actionNum*0.9);
+                    for (var i = 0, count; count = peopleInfo[i].Count; i++){
+                        if (nowCount >= upLimit) break;
+                        nowCount += count;
+                    }
+
+                    var line2Position = i / d.peopleInfo.length;
+
+                    //calculate the distribution
+                    var countArr = [];
+                    var sum = 0;
+                    var std = 0;
+                    var anomaly = 0;
+                    for(var i = 0; i < d.peopleInfo.length; i++){
+                        countArr.push(d.peopleInfo[i].Count);
+                        sum += d.peopleInfo[i].Count;
+                        if(d.peopleInfo[i].Count > 10)  anomaly += d.peopleInfo[i].Count;
+                    }
+                    anomaly /= sum;
+                    var average = sum/d.peopleInfo.length;
+                    for(var i = 0; i < d.peopleInfo.length; i++){
+                        std += Math.sqrt((average - d.peopleInfo[i].Count) * (average - d.peopleInfo[i].Count));
+                    }
+                    std /= d.peopleInfo.length;
+
+                    return {
+                        'actionWidth': actionWidth,
+                        'actionHeight': actionHeight,
+                        'actionPosition': actionPosition,
+                        'videoWeekPosition': videoWeekPosition,
+                        'line1Position': line1Position,
+                        'line2Position': line2Position,
+                        //'grade': grade,
+                        'index': data.indexOf(d),
+                        'ave': average,
+                        'std': std,
+                        'anomaly': anomaly
+                    }
+                });
+
+                for(let i = 0, len = peaks.length; i < len; ++i){
+                    var sum = data[i].grade.reduce(function(pv, cv) { return pv + cv; }, 0);
+                    var w1 = d3.scale.linear().range([(peaks[i].actionWidth - 20) * 0.3, (peaks[i].actionWidth - 20) * 1]);
+                    var h1 = d3.scale.linear().range([(20-peaks[i].actionWidth), (peaks[i].actionWidth - 20)]);
+                    w1.domain(d3.extent(peaks, function(d){ return d.ave }));
+                    h1.domain(d3.extent(peaks, function(d){ return d.std }));
+                    peaks[i].distrAve = w1(peaks[i].ave);
+                    peaks[i].distrStd = h1(peaks[i].std);
+                    peaks[i].grade = [];
+                    for(let j = 0, lenj = data[i].grade.length; j < lenj; ++j){
+                        peaks[i].grade.push(data[i].grade[j]/sum);
+                    }
+                }
+
+                var finalData = {
+                    'nodes': nodes,
+                    'links': links,
+                    'peaks': peaks,
+                    'coordinate': coordinate,
+                    'peakBasicInfo': data
+                };
+                self.peaks = peaks;
+                self.graphData = finalData;
             },
             intersect(a, b) {
                 var t;
@@ -280,10 +276,9 @@
 </script>
 
 <style>
-
-.graphnode {
-    stroke: #fff;
-    stroke-width: 2px;
-    cursor: pointer;
-}
+    .graphnode {
+        stroke: #fff;
+        stroke-width: 2px;
+        cursor: pointer;
+    }
 </style>

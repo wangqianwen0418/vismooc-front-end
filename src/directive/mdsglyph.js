@@ -1,3 +1,4 @@
+import communicator from '../service/communicator.js';
 import d3 from 'd3';
 
 export default {
@@ -80,8 +81,8 @@ export default {
             .attr("class", function (d, i) { return "graphnode peak" + i; })
             .on("click", function (d, i) {
                 videoListHash[peakBasicInfo[i].videoId].currentTime = peakBasicInfo[i].currentTime;
-                self.vm.mdsGlyphChangeVideo(videoListHash[peakBasicInfo[i].videoId]);
-            })
+                communicator(self.vm).emitChangeVideo(videoListHash[peakBasicInfo[i].videoId]);
+            });
         svg.append("title").text(function (d, i) { return nodes[i].name; });
 
         var rbWidth = 20,
@@ -119,7 +120,6 @@ export default {
                     .style('stroke-width', 0)
                 ;
             }
-
         });
             
         //draw anomaly line

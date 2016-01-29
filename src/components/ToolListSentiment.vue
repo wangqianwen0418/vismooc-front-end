@@ -11,7 +11,7 @@
                 </div>
 
                 <div v-show="sentimentData" class="modal-body">
-                    <div v-sentiment-vis="sentimentData" :go-back="showGoBack" :config="mdsChartConfig" ></div>
+                    <div v-sentiment-vis="sentimentData" :config="mdsChartConfig" ></div>
 
                     <div id="tooltip" class="hidden sentiment-modal-tooltip">
                         <p><span id="username">100</span></p>
@@ -58,8 +58,6 @@
                         dataManager.getSentiment(courseId, (response)=>{
                             this.sentimentData = response.data;
                             this.sentimentDataCache = this.sentimentData;
-                            //this.sentimentData2 = undefined;
-                            this.showGoBack = false;
                         });
                     }
                 });
@@ -70,6 +68,7 @@
                         this.mdsChartConfig.isDetail = false;
                         this.sentimentData = this.sentimentDataCache;
                     }else{
+                        
                         this.mdsChartConfig.isDetail = true;
                         dataManager.getSentimentDetails(this.courseId, flag.days,(response)=>{
                             this.sentimentData = response.data;
@@ -125,7 +124,6 @@
     cursor: pointer;
 }
 .goBackLink:hover{
-    
     color:red;
 }
 </style>

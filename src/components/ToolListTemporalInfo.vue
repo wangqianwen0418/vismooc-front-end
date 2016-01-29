@@ -15,9 +15,7 @@
                     :end-date="hotnessData.endDate"
                     style="width:100%; height: 250px; ">
                     </div>
-
                     <hr>
-                    
                     <!--TODO here, privide the filter of byWeek and byAny days-->
                     <div>
                         <div class="sliderExample">
@@ -45,11 +43,10 @@
     </div>
 
     <!--Button-->
-    <div v-show="data" class="statisitc-icon" data-toggle="modal" data-target="#temporal-info-modal">
+    <div v-show="hotnessData" class="statisitc-icon" data-toggle="modal" data-target="#temporal-info-modal">
         <span class="fa fa-calendar"></span>
-        <br/>Social Network
+        <br/>Temporal Info
     </div>
-
 
 </template>
 
@@ -89,11 +86,7 @@
             return {
                 videoId:-1,
                 courseId:-1,
-                hotnessData:{
-                    startDate:"",
-                    endDate:"",
-                    hotness:null
-                },
+                hotnessData:null, //{startDate:"", endDate:"",hotness:null}
                 sliderConfig:{
                     'optionsRange': {
                         start: function (event, ui) { },

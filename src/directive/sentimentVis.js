@@ -134,16 +134,14 @@ export default{
                 'x': -30,
                 'y': legendHeight + 15
             })
-            .text("negative")
-        ;
+            .text("negative");
         legendG.append("text")
             .attr({
                 'class': 'isSummary',
                 'x': legendWidth - 20,
                 'y': legendHeight + 15
             })
-            .text("positive")
-        ;
+            .text("positive");
 
         var textG = svg.append("g")
             .attr("class", "axisText");
@@ -157,9 +155,7 @@ export default{
             .on('click', this.clickSummaryPoint)
             .append('tspan')
             .attr('text-decoration', 'underline')
-            .text('Go Back To Summary')
-
-        ;
+            .text('Go Back To Summary');
 
         textG.append("text")
             .attr({
@@ -205,8 +201,7 @@ export default{
                 'y': 50
             })
             .style("font-size", "30px")
-            .text("Sentiment trend")
-        ;
+            .text("Sentiment trend");
 
         var one_third = (this.params.config.height - padding.top - padding.buttom) / 3;
         //detail back ground
@@ -280,6 +275,15 @@ export default{
             return tempScale(yValue);
         };
 
+        var clickSummaryPoint = function (d) {
+            d3.select("#tooltip").classed("hidden", true);
+            if(self.params.config.isDetail){
+                communicator(self.vm).emitSentiment('delete');
+            }else{
+                communicator(self.vm).emitSentiment(d);
+            }
+        };
+
         this.updatePlot = function () {
             if (!this.sentimentData[0][xVar]) return false;
             
@@ -340,9 +344,7 @@ export default{
                 .attr("fill", function (d) {
                     if (self.params.config.isDetail) {
                         if (d.grade) {
-                            if (d.grade === '#CCC')
-                                return '#888';
-                            return d.grade;
+                            return d.grade === '#CCC' ? '#888' : d.grade;
                         }
                         return extendColorScale(d.positive, d.neutral)
                     } else {
@@ -382,9 +384,7 @@ export default{
                         .attr("fill", function (d) {
                             if (self.params.config.isDetail) {
                                 if (d.grade) {
-                                    if (d.grade === '#CCC')
-                                        return '#888';
-                                    return d.grade;
+                                    return d.grade === '#CCC'?'#888':d.grade;
                                 }
                                 return extendColorScale(d.positive, d.neutral)
                             } else {
@@ -394,7 +394,7 @@ export default{
                     //hide the tooltip
                     d3.select("#tooltip").classed("hidden", true);
                 })
-                .on('click', this.clickSummaryPoint)
+                .on('click', clickSummaryPoint)
                 .transition().duration(500)
                 .attr('r', sqrt30)
             ;
@@ -404,20 +404,12 @@ export default{
             });
         };
 
-        this.clickSummaryPoint = function (d) {
-            d3.select("#tooltip").classed("hidden", true);
-            if(self.params.config.isDetail){
-                communicator(self.vm).emitSentiment('delete');
-            }else{
-                communicator(self.vm).emitSentiment(d);
-            }
-        }
+
 
     },
     update(newVal, oldVal) {
         if (!newVal) return;
         this.sentimentData = newVal;
-
         this.updatePlot();
     }
 }

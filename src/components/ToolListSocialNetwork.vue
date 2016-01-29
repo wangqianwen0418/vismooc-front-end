@@ -2,7 +2,7 @@
         <div id="social-netwrok-modal" class="modal fade" tabindex="-1" role="dialog" 
     aria-labelledby="social-netwrok-modal-label" aria-hidden="true">
     
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-more-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"  aria-label="Close">&times;</button>
@@ -16,7 +16,7 @@
                             <button class="btn btn-default col-md-4" @click="clearSelection()">Clear Selection</button>
                             <h4 class="col-md-8">{{showInfo}}</h4>
                             <div id="social-netwrok-geomap" ></div>
-                            <div wordcloud word-cloud-data = "wordCloudData" style="width: 100%; height:48%"></div>
+                            <div id="social-network-wordcloud"></div>
                         </div>
 
                         <div class="col-md-6" style="height:800px" >
@@ -24,7 +24,7 @@
                                 <h5 style="text-align:center">Filter users due to activeness</h5>
                                 <div ui-slider min="0" max="4" ng-model="threshold.value" ng-change="changeThreshold()"></div>
                             </div>
-                            <div graph data = "data" option = "option" countrycode="countrycode" style="width: 100%"></div>
+                            <div v-social-network="socialNetworkData" :config ="socialNetworkOption" :countrycode="countrycode" style="width: 100%"></div>
                         </div>                        
                     </div>
                 </div>
@@ -38,7 +38,7 @@
     </div>
 
     <!--Button-->
-    <div v-show="data" class="statisitc-icon" @click="createMap()" data-toggle="modal" data-target="#social-netwrok-modal">
+    <div v-show="geoData" class="statisitc-icon" @click="createMap()" data-toggle="modal" data-target="#social-netwrok-modal">
         <span class="fa fa-comments"></span>
         <br/>Social Network
     </div>
@@ -50,6 +50,7 @@
     //thrid party
     import d3 from 'd3';
     import topojson from 'topojson';
+    import Wordcloud from 'wordcloud';
     import Datamap from 'datamaps';
 
     //directives
@@ -61,7 +62,7 @@
     export default {
         directives:{
             socialNetwork:socialNetwork
-        }
+        },
         ready(){
             this.complexObject = {};
             //select the modal then append it to the last of <body>
@@ -71,12 +72,15 @@
                 if (courseId >= 0) {
                     this.courseId = courseId;
                     var threshold=this.threshold;
-                    dataManager.getForumSocialNetwork(courseId, threshold.value,(response)=>{
+                    dataManager.getForumSocialNetwork(this.courseId, threshold.value,(response)=>{
+                        console.log('get forum data');
+                        console.log(response.data);
                         this.datacopy = response.data;
-                        this.data = response.data;
+                        this.socialNetworkData = response.data;
                     });
+                    
                     dataManager.getDemographicData(this.courseId, (response) => {
-                        this.geodata= response.data;
+                        this.geoData = response.data;
                     });
                 }
             });
@@ -88,37 +92,40 @@
 
                 dataManager.getWordCloudData(this.courseId, userId, (response)=>{
                     this.wordCloudData = response.data;
+                    
                 });
             });  
             
-            communicator(this).onCode3((response)=>{
-                this.countrycode=response.data;
-                this.showInfo='Selected country: '+response.data;
+            communicator(this).onCode3((code3)=>{
+                this.countrycode=code3;
+                this.showInfo='Selected country: '+code3
 
                 dataManager.getWordCloudDataByGeo(this.courseId, this.countrycode, (response)=>{
                     this.wordCloudData = response.data;
+
                 });
             });
         },
         data(){
             return{
-                option:{
-                    'width':1200,
-                    'height':600
+                socialNetworkOption:{
+                    'width':800,
+                    'height':800,
                 },
                 courseId:-1,
                 threshold:{value:3},
                 showInfo:"No selection",
                 countrycode:"",
                 wordCloudData:[],
-                data:null,
-                geodata:null,
+                socialNetworkData:null,
+                geoData:null,
                 datacopy:null
             };
 
         },
         complexObject:{
-            map:null
+            map:null,
+            wordcloud:null
         },
         methods:{
             clearSelection(){
@@ -128,7 +135,7 @@
             },
             changeThreshold(){
                 dataManager.getForumSocialNetwork(this.courseID, this.threshold.value, (response)=>{
-                    this.data = response.data;
+                    this.socialNetworkData = response.data;
                     this.datacopy = response.data;
                 });
             },
@@ -138,7 +145,7 @@
             createMap(){
                 
                 var self = this;
-                var datas = this.geodata;
+                var datas = this.geoData;
                 var color = d3.scale.linear().range(['#edf8b1', '#2c7fb8'])
                     .domain([0, Math.log(d3.max(datas.map(function (d) {return d.count;})))]);
 
@@ -150,9 +157,9 @@
 
                 if(!this.complexObject.map){
                     this.complexObject.map = new Datamap({element:document.getElementById('social-netwrok-geomap'),
-                        height: 380, width:400,
+                        height: 380, width:599,
                         fills: {
-                            defaultFill: '#edf8b1' //any hex, color name or rgb/rgba value
+                            defaultFill: '#edf8b1' 
                         },
                         data:geoData,
                         geographyConfig:{ 
@@ -172,8 +179,50 @@
                 } else{
                     this.complexObject.map.updateChoropleth(geoData);
                 }
+            },
+           createWordcloud(){
+                var sizeScale= d3.scale.linear().range([13, 80]);
+
+                if(this.wordCloudData){
+                    var min = d3.min(this.wordCloudData,function(d){ return d[1]; });
+                    var max = d3.max(this.wordCloudData,function(d){ return d[1]; });
+                    sizeScale.domain([min, max])
+                    for(let i = 0, len = this.wordCloudData.length;i<len;++i){
+                        var ele=this.wordCloudData[i];
+                        ele[1]=sizeScale(ele[1])
+                    }
+                }
+                
+                if(!this.complexObject.wordcloud){
+                    var el = document.getElementById('social-network-wordcloud');
+                    var height = 380;
+                    var width = el.offsetWidth;
+
+                    this.complexObject.wordcloud = d3.select(el)
+                        .append("canvas")
+                        .attr('id', 'social-network-wordcloud-canvas')
+                        .attr("width",width)
+                        .attr("height",height).node();
+                }
+                
+                WordCloud(this.complexObject.wordcloud, { list: this.wordCloudData, clearCanvas:true, shape:'circle'} );
+           }
+        },
+        watch:{
+            'wordCloudData':function(newVal, oldVal){
+                if(newVal !== oldVal) this.createWordcloud();
             }
         }
     }
     
-</script>>
+</script>
+
+
+<style>
+.opacitynode {
+	opacity: 0.1;
+}
+.opacityedge {
+	opacity: 0.1;
+}
+</style>

@@ -69,7 +69,6 @@
         },
         methods:{
             filterByCountry(countryID){
-                console.log(this);
                 communicator(this).emitFilterCountry(countryID);
             },
             createMap(){
@@ -89,7 +88,7 @@
                     this.complexObject.map = new Datamap({element:document.getElementById('demographic-info-modal-body'),
                         height: this.modalBodyHeight, width:this.modalBodyWidth,
                         fills: {
-                            defaultFill: '#edf8b1' //any hex, color name or rgb/rgba value
+                            defaultFill: '#edf8b1'
                         },
                         data:geoData,
                         geographyConfig:{ 
@@ -106,12 +105,6 @@
                             });
                         }
                     });
-                    
-                    // d3.select("#demographic-info-modal-body")
-                    //     .selectAll('.datamaps-subunit')
-                    //     .on('click', function (d) {
-                    //         self.filterByCountry(d.id);
-                    //     });
                 } else{
                     this.complexObject.map.updateChoropleth(geoData);
                 }

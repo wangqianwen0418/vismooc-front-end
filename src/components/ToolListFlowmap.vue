@@ -90,7 +90,6 @@
             };
             
             this.windowHeight = window.innerHeight;
-
             
             //init colors
             this.colors = d3.scale.ordinal()
