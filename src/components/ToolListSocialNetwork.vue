@@ -12,19 +12,19 @@
                 <!--TODO here directive-->
                 <div class="modal-body" >
                     <div class="row">
-                        <div class="col-md-6" style="height:800px">
+                        <div class="col-md-6">
                             <button class="btn btn-default col-md-4" @click="clearSelection()">Clear Selection</button>
                             <h4 class="col-md-8">{{showInfo}}</h4>
                             <div id="social-netwrok-geomap" ></div>
                             <div id="social-network-wordcloud"></div>
                         </div>
 
-                        <div class="col-md-6" style="height:800px" >
+                        <div class="col-md-6">
                             <div class="container" style="height:30px; width:40%">
                                 <h5 style="text-align:center">Filter users due to activeness</h5>
                                 <div ui-slider min="0" max="4" ng-model="threshold.value" ng-change="changeThreshold()"></div>
                             </div>
-                            <div v-social-network="socialNetworkData" :config ="socialNetworkOption" :countrycode="countrycode" style="width: 100%"></div>
+                            <div v-social-network="socialNetworkData" :config ="socialNetworkOption" :countrycode="countrycode"></div>
                         </div>                        
                     </div>
                 </div>
@@ -107,8 +107,8 @@
         data(){
             return{
                 socialNetworkOption:{
-                    'width':800,
-                    'height':800,
+                    'width':580,
+                    'height':599,
                 },
                 courseId:-1,
                 threshold:{value:3},
@@ -155,7 +155,7 @@
 
                 if(!this.complexObject.map){
                     this.complexObject.map = new Datamap({element:document.getElementById('social-netwrok-geomap'),
-                        height: 380, width:599,
+                        height: 280, width:599,
                         fills: {
                             defaultFill: '#edf8b1' 
                         },

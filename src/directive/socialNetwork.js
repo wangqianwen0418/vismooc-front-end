@@ -12,7 +12,8 @@ export default {
         }
         var legendWidth = 200;
         var legendHeight = 20;
-
+        
+        
         var legendGText = this.svg.append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -24,7 +25,7 @@ export default {
             .text("Student's grade");
         legendGText.append("text")
             .attr({
-                'x': 450,
+                'x': 360 - 10,
                 'y': -5
             })
             .text("Student's activeness");
@@ -48,13 +49,13 @@ export default {
             .text("No grade");
         legendGText.append("text")
             .attr({
-                'x': 450,
-                'y': legendWidth + 15
+                'x': 360 - 10,
+                'y': legendHeight + 15
             })
             .text("less");
         legendGText.append("text")
             .attr({
-                'x': 550,
+                'x': 360 - 15 + legendWidth * 0.5,
                 'y': legendHeight + 15
             })
             .text("more");
@@ -64,14 +65,14 @@ export default {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         legendG.append("circle")
             .attr({
-                'cx': 460,
+                'cx': 360,
                 'cy': legendHeight - 10,
                 'r': 2,
                 'fill': 'red'
             });
         legendG.append("circle")
             .attr({
-                'cx': 568,
+                'cx': 360 + legendWidth * 0.5,
                 'cy': legendHeight - 10,
                 'r': 11,
                 'fill': 'red'
@@ -85,7 +86,7 @@ export default {
                 'width': legendHeight,
                 'height': legendHeight
             });
-        legendG.append("defs")
+        var defs = legendG.append("defs")
             .append("linearGradient")
             .attr({
                 'id': idGradient,
@@ -116,7 +117,7 @@ export default {
 
         //kind of out of order, but set up the data here 
         var theData = [];
-        for (var i = 0; i < numberHues; i++) {
+        for (let i = 0; i < numberHues; ++i) {
             theHue = hueStart + deltaHue * i;
             //the second parameter, set to 1 here, is the saturation
             // the third parameter is "lightness"    
@@ -127,20 +128,19 @@ export default {
         }
 
         //now the d3 magic (imo) ...
-        var stops = d3.select('#' + idGradient).selectAll('stop')
-            .data(theData);
-
-        stops.enter().append('stop');
-        stops.attr('offset', function (d) {
-            return d.percent;
-        })
+        console.log(theData);
+        defs.selectAll('stop')
+            .data(theData)
+            .enter().append('stop')
+            .attr('offset', function (d) {
+                return d.percent;
+            })
             .attr('stop-color', function (d) {
                 return d.rgb;
             })
             .attr('stop-opacity', function (d) {
                 return d.opacity;
             });
-
     },
     update(newValue, oldVal) {
         if (!newValue) return;
@@ -150,7 +150,12 @@ export default {
 
         w = this.params.config.width;
         h = this.params.config.height;
-        padding = 100;
+        padding = {
+            left:30,
+            right:30,
+            top:100,
+            bottom:0
+        };
 
         var mappedNodes = {};
         data.nodes.forEach(function (d) {
@@ -161,10 +166,10 @@ export default {
 
         xScale = d3.scale.linear()
             .domain(d3.extent(data.nodes, function (d) { return d.x; }))
-            .range([padding, w - padding]);
+            .range([padding.right, w - padding.left]);
         yScale = d3.scale.linear()
             .domain(xScale.domain())
-            .range([padding, h - padding]);
+            .range([padding.top, h - padding.bottom]);
         rScale = d3.scale.linear()
             .domain(d3.extent(data.nodes, function (d) { return d.size; }))
             .range([2, 11]);
