@@ -43,7 +43,7 @@
     </div>
 
     <!--Button-->
-    <div v-show="hotnessData" class="statisitc-icon" data-toggle="modal" data-target="#temporal-info-modal">
+    <div v-show="hotnessData.hotness" class="statisitc-icon" data-toggle="modal" data-target="#temporal-info-modal">
         <span class="fa fa-calendar"></span>
         <br/>Temporal Info
     </div>
@@ -86,7 +86,7 @@
             return {
                 videoId:-1,
                 courseId:-1,
-                hotnessData:null, //{startDate:"", endDate:"",hotness:null}
+                hotnessData:{startDate:"", endDate:"",hotness:null},
                 sliderConfig:{
                     'optionsRange': {
                         start: function (event, ui) { },

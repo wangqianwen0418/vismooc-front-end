@@ -73,8 +73,6 @@
                     this.courseId = courseId;
                     var threshold=this.threshold;
                     dataManager.getForumSocialNetwork(this.courseId, threshold.value,(response)=>{
-                        console.log('get forum data');
-                        console.log(response.data);
                         this.datacopy = response.data;
                         this.socialNetworkData = response.data;
                     });

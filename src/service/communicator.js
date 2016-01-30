@@ -98,7 +98,6 @@ export default function (scope) {
     };
 
     var emitChangeVideo = function (video) {
-        console.log("change video");
         scope.$root.$children[0].$broadcast(CHANGE_VIDEO, video);
     };
 
