@@ -1,10 +1,12 @@
 <template>
 
     <div id="content">
-        <div v-show="videoSource.src" style="width:100%; z-index:-1">
+        
+        <div v-show="videoSource.src" >
             <video id="moocVideo" class="video-js vjs-16-9 vjs-default-skin  vjs-big-play-centered" controls></video>
         </div>
-            
+        
+        <div id="content-video-progress-bar"></div>    
         <div v-show="seekData" id="seekline-graph">
             <canvas v-seekline="seekData" 
             style="height: 200px; left:0; z-index:1; width:100% "> </canvas>
@@ -53,6 +55,14 @@
                 if (length % num !=0) newArray.push(sum/length%num);
                 return newArray;
             };
+                        
+            $('#moocVideo').on('timeupdate',function(){
+                var currentPos = this.currentTime; //Get currenttime
+                var maxDuration = this.duration; //Get video duration
+                
+                $('#content-video-progress-bar').css('width', (100 * currentPos / maxDuration)+'%');
+            });
+            
 
             //init colors
             this.colors = d3.scale.ordinal()
@@ -62,8 +72,8 @@
             
             communicator(this).onChangeVideo((videoInfo) => {
                 if (videoInfo) {
-                    this.videoID = videoInfo.videoId;
-                    this.currentTime = videoInfo.currentTime;
+                    this.videoId = videoInfo.videoId;
+                    //this.currentTime = videoInfo.currentTime;
                     this.videoSource['src'] = videoInfo.videoSource;
                     this.setData(videoInfo.videoId);
 
@@ -83,14 +93,14 @@
             communicator(this).onFilterCountry((countryID) => {
                 if (countryID) {
                     this.country = countryID;
-                    this.setData(this.videoID, { country: countryID });
+                    this.setData(this.videoId, { country: countryID });
                 }
             });
 
             communicator(this).onFilterDate((period) => {
                 if (period) {
                     this.period = period;
-                    this.setData(this.videoID, { startTime: period.startDate,endTime:period.endDate });
+                    this.setData(this.videoId, { startTime: period.startDate,endTime:period.endDate });
                 }
             });
 
@@ -100,10 +110,17 @@
             return {
                 player:null,
                 videoSource: {src:null, type: "video/mp4"},
+
                 videoConfig: {
+                    playbackRates: [1, 1.5, 2],
                     controls: true,
                     preload: "none",
-
+                    controlBar: {
+                            currentTimeDisplay: true,
+                            durationDisplay:true,
+                            timeDivider:true,
+                            remainingTimeDisplay:false
+                    }
                 },
                 chartConfig:{
                         type: 'stackedAreaChart',
@@ -141,22 +158,12 @@
                 
 
                 selectedCourseId: -1,
-                videoID: -1,
+                videoId: -1,
                 period: {}, //startDate:string,endDate:string
                 
-                currentTime: 0,
-                durationTime: 0,
-                
-                country: "",    ///???
-                selectedFreq: 0,///???
-                mouseCount: 0,  //???
-                threshold: 30,  ///???
-
                 chartData:null,
                 seekData:null,
                 weeks:null,
-                
-                dynamicHeight:0,//???
                 
                 colors:null,
             }
@@ -182,7 +189,7 @@
                 var data = response.data;
                 var colors = this.colors;
                 if (data.clicks){
-                    var data = data.clicks.map(function (dat) {
+                    data = data.clicks.map(function (dat) {
                         var length = dat.data.length;
                         var result = dat.data.slice(3, length - 3)
                             .aggregate(3)
@@ -202,17 +209,6 @@
                     this.chartData = data;
                 }
             },
-            
-            addMouseDown() {
-                this.isMouseOn = false;
-                console.log("mouse down")
-            },
-            addMouseUp() {
-                this.mouseCount++;
-                this.isMouseOn = true;
-                console.log("mouse up")
-            },
-            
             processSeekData(response) {
                 var barHeight = 40;
                 var barMargin = 10;
@@ -227,9 +223,9 @@
                 this.dynamicHeight = (barHeight + barMargin) * 2 * (textHeight);
             },
                   
-            setData(videoID, filter) {              
-                dataManager.getActionCountInfo(this.selectedCourseId,videoID,filter,this.processData);
-                dataManager.getSeekInfo(this.selectedCourseId, videoID,filter ,this.processSeekData);
+            setData(videoId, filter) {              
+                dataManager.getActionCountInfo(this.selectedCourseId,videoId,filter,this.processData);
+                dataManager.getSeekInfo(this.selectedCourseId, videoId,filter ,this.processSeekData);
             }
 
         }
@@ -247,6 +243,20 @@
 	margin-left: 2%;
 }
 
+
+#content-video-progress-bar{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: #aaaaaa;
+    border-right: dashed 1px;
+    border-color: #000000;
+    opacity: 0.2;
+    z-index: -3;
+}
+
 #seekline-graph {
 
 }
@@ -255,16 +265,48 @@
     width: calc(100% + 40px);
 }
 
+/* .video-container {
+     width: 100%;
+     height: 320px;
+     margin: auto;
+     overflow: hidden;
+ }*/
+
 /* video*/
-.video-js.vjs-default-skin.vjs-paused .vjs-big-play-button {
-    display:block !important;
+#moocVideo .video-js.vjs-default-skin.vjs-paused .vjs-big-play-button,
+#moocVideo .vjs-control-bar .vjs-current-time,
+#moocVideo .vjs-control-bar .vjs-time-divider,
+#moocVideo .vjs-control-bar .vjs-duration {
+  display: block;
 }
 
-.video-container {
-    width: 100%;
-    height: 320px;
-    margin: auto;
-    overflow: hidden;
+#moocVideo .vjs-control-bar .vjs-progress-control {  
+  position: absolute;
+  bottom: 26px; /* The height of the ControlBar minus 4px. */
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 10px; /* the height must be reduced from 30 to 10px in order to allow the buttons below (e.g. play) to be pushed */
+}
+#moocVideo .vjs-control-bar .vjs-progress-holder {/* needed to have a real 100% width display. */
+  margin-left: 0px;
+  margin-right: 0px;
+}
+
+#moocVideo .vjs-control-bar .vjs-volume-menu-button {
+  position: absolute;
+  bottom: 0;
+  right: 55px;
+}
+#moocVideo .vjs-control-bar .vjs-playback-rate {
+  position: absolute;
+  bottom: 0;
+  right: 28px;
+}
+#moocVideo .vjs-control-bar .vjs-fullscreen-control {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 </style>
