@@ -88,7 +88,7 @@
                 var username=data[1];
                 this.showInfo='Selected user: '+username;
 
-                dataManager.getWordCloudData(this.courseId, userId, (response)=>{
+                dataManager.getWordCloudDataByUser(this.courseId, userId, (response)=>{
                     this.wordCloudData = response.data;
                     
                 });

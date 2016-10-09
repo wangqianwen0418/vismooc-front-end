@@ -7,29 +7,30 @@ var mainPath = 'http://localhost:3004/';
 var $http = Vue.http;
 
 var getSentiment = function (courseId, callback) {
-    var tmpURL = mainPath + 'getSentiment?courseId=' + courseId;
-    $http.get(tmpURL).then(function (response) {
-        callback(response);
-    });
-};
-
-var getWordCloudData = function (courseId, userId, callback) {
-    var tmpURL = mainPath + 'getWordCloudData?courseId=' + courseId + '&userId=' + userId;
-
-    $http.get(tmpURL).then(function (response) {
-        callback(response);
-    });
-};
-
-var getWordCloudDataByGeo = function (courseId, code3, callback) {
-    var tmpURL = mainPath + 'getWordCloudDataByGeo?courseId=' + courseId + '&countryCode=' + code3;
+    //var tmpURL = mainPath + 'getSentiment?courseId=' + courseId;
+    var tmpURL = mainPath + 'sentiment?courseId=' + courseId;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getSentimentDetails = function (courseId, days, callback) {
-    var tmpURL = mainPath + 'getSentimentDetails?courseId=' + courseId + '&days=' + days;
+    var tmpURL = mainPath + 'sentiment?courseId=' + courseId + '&days=' + days;
+    $http.get(tmpURL).then(function (response) {
+        callback(response);
+    });
+};
+
+var getWordCloudDataByUser = function (courseId, userId, callback) {
+    //var tmpURL = mainPath + 'getWordCloudData?courseId=' + courseId + '&userId=' + userId;
+    var tmpURL = mainPath + 'wordCloudData?type=user&courseId=' + courseId + '&userId=' + userId;
+    $http.get(tmpURL).then(function (response) {
+        callback(response);
+    });
+};
+
+var getWordCloudDataByGeo = function (courseId, countryCode, callback) {
+    var tmpURL = mainPath + 'getWordCloudData?type=geo&courseId=' + courseId + '&countryCode=' + countryCode;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
@@ -49,7 +50,7 @@ var getForumSocialNetwork = function (courseId, filterLevel, callback) {
 };
 
 var getSeekInfo = function (courseId, videoId, paramters, callback) {
-    var tmpURL = mainPath + 'getContentBasedData?type=seek&courseId=' + courseId + '&videoId=' + videoId;
+    var tmpURL = mainPath + 'contentBasedData?type=seek&courseId=' + courseId + '&videoId=' + videoId;
     if (typeof paramters === 'function') {
         callback = paramters;
     }else if (typeof paramters === 'object') {
@@ -64,7 +65,7 @@ var getSeekInfo = function (courseId, videoId, paramters, callback) {
 };
 
 var getActionCountInfo = function (courseId, videoId, paramters, callback) {
-    var tmpURL = mainPath + 'getContentBasedData?type=action&courseId=' + courseId + '&videoId=' + videoId;
+    var tmpURL = mainPath + 'contentBasedData?type=action&courseId=' + courseId + '&videoId=' + videoId;
     if (typeof paramters === 'function') {
         callback = paramters;
     }else if (typeof paramters === 'object') {
@@ -80,42 +81,42 @@ var getActionCountInfo = function (courseId, videoId, paramters, callback) {
 };
 
 var getDailyHotnessByVideo = function (courseId, videoId, callback) {
-    var tmpURL = mainPath + 'getVideoPop?courseId=' + courseId + '&videoId=' + videoId;
+    var tmpURL = mainPath + 'videoPop?courseId=' + courseId + '&videoId=' + videoId;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getDemographicData = function (courseId, callback) {
-    var tmpURL = mainPath + 'getDemographicData?courseId=' + courseId;
+    var tmpURL = mainPath + 'demographicData?courseId=' + courseId;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getCourseInfo = function (courseId, callback) {
-    var tmpURL = mainPath + 'getCourseInfo?courseId=' + courseId;
+    var tmpURL = mainPath + 'courseInfo?courseId=' + courseId;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getCourseList = function (callback) {
-    var tmpURL = mainPath + 'getCourseList';
+    var tmpURL = mainPath + 'courseList';
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getHotness = function (courseId, callback) {
-    var tmpURL = mainPath + 'getHotness?courseId=' + courseId;
+    var tmpURL = mainPath + 'hotness?courseId=' + courseId;
     $http.get(tmpURL).then(function (response) {
         callback(response);
     });
 };
 
 var getVideoList = function (courseId, callback) {
-    var tmpURL = mainPath + 'getVideoList?courseId=' + courseId;
+    var tmpURL = mainPath + 'videoList?courseId=' + courseId;
     $http.get(tmpURL).then(function (response) {
         response.data.forEach(function (week) {
             week.videos.forEach(function (video) {
@@ -138,7 +139,7 @@ var getAnimationTest = function (courseId, videoId, startTime, endTime, callback
 };
 
 var getGlyphInfo = function (courseId, callback) {
-    var tmpURL = mainPath + 'getGlyphInfo?courseId=' + courseId;
+    var tmpURL = mainPath + 'glyphInfo?courseId=' + courseId;
     $http.get(tmpURL)
         .then(function (response) {
             callback(response);
@@ -146,7 +147,7 @@ var getGlyphInfo = function (courseId, callback) {
 };
 
 var getParallelCoor = function (courseId, callback) {
-    var tempURL = mainPath + 'ParallelCoor?courseId=' + courseId;
+    var tempURL = mainPath + 'parallelCoor?courseId=' + courseId;
     $http.get(tempURL)
         .then(function (response) {
             callback(response)
@@ -162,7 +163,7 @@ export default {
     'getGlyphInfo': getGlyphInfo,
     'getAnimationTest': getAnimationTest,
     'getSentiment': getSentiment,
-    'getWordCloudData': getWordCloudData,
+    'getWordCloudDataByUser': getWordCloudDataByUser,
     'getWordCloudDataByGeo': getWordCloudDataByGeo,
     'getSentimentDetails': getSentimentDetails,
     'getForumSocialNetwork': getForumSocialNetwork,
