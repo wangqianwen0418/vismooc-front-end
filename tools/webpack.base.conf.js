@@ -6,7 +6,7 @@ const eslintFormatter = require('eslint-friendly-formatter');
 
 module.exports = {
     entry: {
-        app: './src/main.js',
+        app: ['./src/main.js'],
     },
     resolve: {
         extensions: ['', '.js', '.vue'],
@@ -44,7 +44,6 @@ module.exports = {
                 exclude: /node_modules/,
             },
             { test: /\.json$/, loader: 'json' },
-            { test: /\.html$/, loader: 'vue-html' },
             {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
                 loader: 'url',
@@ -61,14 +60,19 @@ module.exports = {
                     name: utils.assetsPath('fonts/[name].[hash:7].[ext]'),
                 },
             },
-            {
-                test: require.resolve('material-design-lite/material.js'),
-                loader: 'exports?componentHandler',
-            },
+            // {
+            //     test: require.resolve('material-design-lite/material.js'),
+            //     loader: 'exports?componentHandler',
+            // },
         ],
     },
     vue: {
         loaders: utils.cssLoaders(),
+        postcss: [
+            require('autoprefixer')({
+                browsers: ['last 2 versions']
+            })
+        ]
     },
     babel: {
         presets: ['es2015', 'stage-2'],

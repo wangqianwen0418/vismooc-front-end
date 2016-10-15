@@ -4,7 +4,7 @@ module.exports = {
     "parserOptions": {
         "sourceType": "module"
     },
-    "extends": "airbnb/base",
+    "extends": "airbnb-base",
     "plugins": [
         "html"
     ],
@@ -52,7 +52,7 @@ module.exports = {
     "settings": {
         "import/resolver": {
             "webpack": {
-                "config": "/build/webpack.base.conf.js"
+                "config": "tools/webpack.base.conf.js"
             }
         }
     }

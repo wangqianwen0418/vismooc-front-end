@@ -64,7 +64,11 @@
     },
     "author": "me",
     "scripts": {
-        "dev": "webpack-dev-server --inline --hot",
-        "build": "webpack -p"
+        "dev": "node tools/dev-server.js",
+        "build": "node tools/build.js",
+        "unit": "karma start test/unit/karma.conf.js --single-run",
+        "e2e": "node test/e2e/runner.js",
+        "test": "npm run unit && npm run e2e",
+        "lint": "eslint --ext .js,.vue src test/unit/specs test/e2e/specs"
     }
 }

@@ -1,15 +1,15 @@
 'use strict';
+
 const webpack = require('webpack');
 const merge = require('webpack-merge');
 const config = require('../config');
-const utils = require('../build/utils');
+const utils = require('./utils');
 const baseWebpackConfig = require('./webpack.base.conf');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 // add hot-reload related code to entry chunks
 Object.keys(baseWebpackConfig.entry).forEach((name) => {
-    baseWebpackConfig.entry[name] = ['webpack-hot-middleware/client?noInfo=true&reload=true']
-        .concat(baseWebpackConfig.entry[name]);
+    baseWebpackConfig.entry[name].unshift('webpack-hot-middleware/client?noInfo=true&reload=true');
 });
 
 module.exports = merge(baseWebpackConfig, {
@@ -24,6 +24,9 @@ module.exports = merge(baseWebpackConfig, {
         loaders: utils.styleLoaders(),
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': config.dev.env
+        }),
         // https://github.com/glenjamin/webpack-hot-middleware#installation--usage
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
