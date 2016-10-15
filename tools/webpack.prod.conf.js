@@ -1,4 +1,5 @@
 'use strict';
+const path = require('path');
 const config = require('../config');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
@@ -6,6 +7,7 @@ const baseWebpackConfig = require('./webpack.base.conf');
 const utils = require('./utils');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 
 const webpackConfig = merge(baseWebpackConfig, {
     devtool: config.build.productionSourceMap ? '#source-map' : false,
@@ -27,7 +29,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     plugins: [
         // http://vuejs.github.io/vue-loader/workflow/production.html
         new webpack.DefinePlugin({
-            'process.env': env
+            'process.env': process.env.NODE_ENV === 'testing' ? require('../config/test.env') : config.build.env
         }),
         new webpack.optimize.UglifyJsPlugin({
             compress: {
