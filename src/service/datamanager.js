@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueResource from 'vue-resource';
 Vue.use(VueResource);
 
-let mainPath = 'http://localhost:3004/';
+let mainPath = 'http://vis.cse.ust.hk/vismooc/';
 let $http = Vue.http;
 
 // We need
