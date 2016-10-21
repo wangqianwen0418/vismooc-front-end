@@ -46,11 +46,11 @@
     import ToolListDemographicInfo from './ToolListDemographicInfo.vue';
     import ToolListVideopopInfo from './ToolListVideopopInfo.vue';
     import ToolListTemporalInfo from './ToolListTemporalInfo.vue';
-    import ToolListSentiment from './ToolListSentiment.vue';
-    import ToolListSocialNetwork from './ToolListSocialNetwork.vue';
-    import ToolListFlowmap from './ToolListFlowmap.vue';
-    import ToolListCoorelation from './ToolListCoorelation.vue';
-    import ToolListMdsGlyph from './ToolListMdsGlyph.vue';
+    // import ToolListSentiment from './ToolListSentiment.vue';
+    // import ToolListSocialNetwork from './ToolListSocialNetwork.vue';
+    // import ToolListFlowmap from './ToolListFlowmap.vue';
+    // import ToolListCoorelation from './ToolListCoorelation.vue';
+    // import ToolListMdsGlyph from './ToolListMdsGlyph.vue';
     
     export default {
         components:{
@@ -58,11 +58,11 @@
             tlDemographicInfo:ToolListDemographicInfo,
             tlVideopopInfo:ToolListVideopopInfo,
             tlTemporalInfo:ToolListTemporalInfo,
-            tlSentiment:ToolListSentiment,
-            tlSocialNetwork:ToolListSocialNetwork,
-            tlCoorelation:ToolListCoorelation,
-            tlMdsGlyph:ToolListMdsGlyph,
-            tlFlowmap:ToolListFlowmap
+            // tlSentiment:ToolListSentiment,
+            // tlSocialNetwork:ToolListSocialNetwork,
+            // tlCoorelation:ToolListCoorelation,
+            // tlMdsGlyph:ToolListMdsGlyph,
+            // tlFlowmap:ToolListFlowmap
         }
     }
 
